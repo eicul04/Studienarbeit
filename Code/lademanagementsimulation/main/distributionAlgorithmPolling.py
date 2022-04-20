@@ -12,17 +12,19 @@ import bevParkingManagementVisualisation
 
 
 def start_simulation(solar_peak_power, max_charging_time, charging_power_pro_bev,
-                     bev_parking_management, visualisation_object, table_dict):
+                     bev_parking_management, visualisation_object, table_dict, bev_data):
     simulate_day(solar_peak_power, max_charging_time, charging_power_pro_bev, bev_parking_management,
-                 visualisation_object, table_dict)
+                 visualisation_object, table_dict, bev_data)
 
 
-def simulate_day(solar_peak_power, max_charging_time, charging_power_pro_bev, bev_parking_management, visualisation_object, table_dict):
+def simulate_day(solar_peak_power, max_charging_time, charging_power_pro_bev, bev_parking_management, visualisation_object, table_dict, bev_data):
     day_in_minute_steps = list(np.around(np.arange(480, 960 + 1, 1), 1))
     for minute in day_in_minute_steps:
         check_and_update_parking_data(solar_peak_power, minute, max_charging_time,
                                       charging_power_pro_bev, bev_parking_management)
         safe_bev_dict_per_minute(minute, bev_parking_management, visualisation_object, table_dict, solar_peak_power)
+        waiting_list = bev_parking_management.waiting_bevs_list.get_waiting_bevs_list()
+        bev_data.add_waiting_list_to_dict(minute, waiting_list)
 
 
 

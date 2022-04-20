@@ -1,5 +1,6 @@
 import time
 
+import pandas as pd
 import plotly.express as px
 import numpy as np
 import scipy as sp
@@ -55,11 +56,16 @@ def generate_charging_power_figure():
     ladestrom_bev_fig.show()
 
 
-def create_bev_number_figure():
+def create_bev_number_figure(bev_data):
+    waiting_list_per_minute_dict = bev_data.get_waiting_list_per_minute_dict()
+    df = pd.DataFrame(waiting_list_per_minute_dict.keys(), waiting_list_per_minute_dict.values(),
+               columns =['Minuten', 'Wartende BEVs'])
+
     bev_number_figure = px.line()
+
     # TODO get Number bevs waiting, get Number bevs loading
-    # bev_number_figure.add_scatter(x=, y=,
-    #                       line_color='blue', name='Solarleistung')
+    bev_number_figure.add_scatter(x=df['Minuten'], y=df['Wartende BEVs'],
+                           line_color='blue', name='Wartende BEVs')
 
 
 def create_available_solar_power_figure_quadratic_interpolation(solar_peak_power):

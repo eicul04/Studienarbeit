@@ -2,6 +2,19 @@ import calculation
 import pandas as pd
 
 
+class BevData:
+
+    def __init__(self):
+        self.waiting_list_per_minute_dict = {}
+        self.charging_list_per_minute_dict = {}
+
+    def add_waiting_list_to_dict(self, minute, waiting_list):
+        self.waiting_list_per_minute_dict[minute] = waiting_list
+
+    def get_waiting_list_per_minute_dict(self):
+        return self.waiting_list_per_minute_dict
+
+
 def get_solar_radiation_dataframe():
     df_solar_radiation = pd.read_csv('data_files/sonneneinstrahlung.csv', sep=';')
     return df_solar_radiation
