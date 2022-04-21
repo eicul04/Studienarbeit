@@ -1,12 +1,13 @@
 import copy
 from enum import Enum
+from simulationData import create_plotly_table
 
 import bevParkingManagementCalculation
 import bevParkingManagementChecks
 import numpy as np
 import dataChecks
 import data
-import bevParkingManagementVisualisation
+import simulationData
 
 
 # TODO Visualization: Diagramm Anzahl Waiting und Charging BEVs
@@ -19,19 +20,19 @@ class Algorithm(Enum):
 
 
 def start_simulation(solar_peak_power, max_charging_time, charging_power_pro_bev,
-                     bev_parking_management, visualisation_object, table_dict, bev_data, algorithm):
+                     bev_parking_management, bev_data_per_minute_dict, table_dict, bev_data, algorithm):
     algorithm_module = __import__(algorithm.value)
     simulate_day(solar_peak_power, max_charging_time, charging_power_pro_bev, bev_parking_management,
-                 visualisation_object, table_dict, bev_data, algorithm_module)
+                 bev_data_per_minute_dict, table_dict, bev_data, algorithm_module)
 
 
 def simulate_day(solar_peak_power, max_charging_time, charging_power_pro_bev, bev_parking_management,
-                 visualisation_object, table_dict, bev_data, algorithm_module):
+                 bev_data_per_minute_dict, table_dict, bev_data, algorithm_module):
     day_in_minute_steps = list(np.around(np.arange(480, 960 + 1, 1), 1))
     for minute in day_in_minute_steps:
         check_and_update_parking_data(solar_peak_power, minute, max_charging_time,
                                       charging_power_pro_bev, bev_parking_management, algorithm_module)
-        safe_bev_dict_per_minute(minute, bev_parking_management, visualisation_object, table_dict, solar_peak_power)
+        safe_bev_dict_per_minute(minute, bev_parking_management, bev_data_per_minute_dict, table_dict, solar_peak_power)
         safe_waiting_list_per_minute(bev_parking_management, bev_data, minute)
         safe_charging_list_per_minute(bev_parking_management, bev_data, minute)
 
@@ -148,12 +149,12 @@ def calculate_overflow_of_bevs_charging(number_of_virtual_charging_stations, num
     return number_of_charging_bevs - number_of_virtual_charging_stations
 
 
-def safe_bev_dict_per_minute(minute, bev_parking_management, visualisation_object, table_dict, solar_peak_power):
+def safe_bev_dict_per_minute(minute, bev_parking_management, bev_data_per_minute_dict, table_dict, solar_peak_power):
     current_bevs_dict = copy.deepcopy(bev_parking_management.bevs_dict)
-    visualisation_object.add_bev_dict(minute, current_bevs_dict)
-    bev_dict_specific_minute = visualisation_object.get_bev_dict(minute)
-    current_table = bevParkingManagementVisualisation.create_plotly_table(bev_dict_specific_minute, solar_peak_power,
-                                                                          minute)
+    bev_data_per_minute_dict.add_bev_data_per_minute_dict(minute, current_bevs_dict)
+    bev_dict_specific_minute = bev_data_per_minute_dict.get_bev_data_per_minute_dict(minute)
+    current_table = create_plotly_table(bev_dict_specific_minute, solar_peak_power,
+                                                                 minute)
     table_dict.add_table(minute, current_table)
 
 

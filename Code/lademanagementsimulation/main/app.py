@@ -68,7 +68,7 @@ if __name__ == "__main__":
 def create_dash_app_table(visualisation_object, minute):
     app = JupyterDash(__name__)
 
-    bev_dict_specific_minute = visualisation_object.get_bev_dict(minute)
+    bev_dict_specific_minute = visualisation_object.get_bev_data_per_minute_dict(minute)
 
     parking_states = []
     parking_starts = []
@@ -135,7 +135,7 @@ def create_dash_app_table(visualisation_object, minute):
         Output('table_out', 'children'),
         Input('minute-slider', 'value'))
     def update_table(value):
-        bev_dict_specific_minute_new = visualisation_object.get_bev_dict(value)
+        bev_dict_specific_minute_new = visualisation_object.get_bev_data_per_minute_dict(value)
         df_new = create_table_dataframe(bev_dict_specific_minute_new)
         data = df_new.to_dict('records')
         return data

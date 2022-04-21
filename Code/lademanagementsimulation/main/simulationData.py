@@ -4,16 +4,66 @@ import data
 from timeTransformation import as_time_of_day_from_hour, as_time_of_day_from_minute
 
 
-class VisualisationObject:
+class SimulationData:
 
     def __init__(self):
-        self.bev_dict_per_minute = {}
+        self.waiting_list_per_minute_dict = {}
+        self.charging_list_per_minute_dict = {}
+        self.already_charged_list_per_minute_dict = {}
+        self.unused_solar_energy_per_minute_dict = {}
 
-    def add_bev_dict(self, minute, current_bevs_dict):
-        self.bev_dict_per_minute[minute] = current_bevs_dict
+    def add_waiting_list_to_dict(self, minute, waiting_list):
+        self.waiting_list_per_minute_dict[minute] = waiting_list
 
-    def get_bev_dict(self, minute):
-        return self.bev_dict_per_minute[minute].get_bevs_dict()
+    def get_waiting_list_per_minute_dict(self):
+        return self.waiting_list_per_minute_dict
+
+    def add_charging_list_to_dict(self, minute, charging_list):
+        self.charging_list_per_minute_dict[minute] = charging_list
+
+    def get_charging_list_per_minute_dict(self):
+        return self.charging_list_per_minute_dict
+
+    def add_already_charged_list_to_dict(self, minute, already_charged_list):
+        self.already_charged_list_per_minute_dict[minute] = already_charged_list
+
+    def get_already_charged_list_per_minute_dict(self):
+        return self.already_charged_list_per_minute_dict
+
+    def add_unused_solar_power_to_dict(self, minute, unused_solar_power):
+        self.unused_solar_energy_per_minute_dict[minute] = unused_solar_power
+
+    def get_unused_solar_power_per_minute_dict(self):
+        return self.unused_solar_energy_per_minute_dict
+
+
+class BevData:
+
+    def __init__(self):
+        self.bev_data_per_minute_dict = {}
+        self.total_number_of_charged_bevs = 0
+        self.sum_of_fueled_solar_energy = 0
+
+    def add_bev_data_per_minute_dict(self, minute, current_bevs_dict):
+        self.bev_data_per_minute_dict[minute] = current_bevs_dict
+
+    def get_bev_data_per_minute_dict(self, minute):
+        return self.bev_data_per_minute_dict[minute].get_bevs_dict()
+
+    def get_bev_data_for_last_minute(self):
+        return list(self.bev_data_per_minute_dict.values())[-1]
+
+    def get_total_number_of_charged_bevs(self):
+        return self.total_number_of_charged_bevs
+
+    def get_total_number_of_fueled_solar_energy(self):
+        return self.sum_of_fueled_solar_energy
+
+    # TODO make it work
+    def set_total_number_of_fueled_solar_energy(self):
+        bev_data = self.get_bev_data_for_last_minute()
+        # TODO was ist bev_data die da übergeben wird? was will ich?
+        self.sum_of_fueled_solar_energy += get_fueled_solar_energy_per_bev(bev_data)
 
 
 class TableDict:
@@ -30,6 +80,13 @@ class TableDict:
     def show_table(self, minute):
         fig = self.table_dict[minute]
         fig.show()
+
+
+def get_fueled_solar_energy_per_bev(bev_data):
+    fueled_solar_energy_per_bev = 0
+    for charging_tuple in bev_data[2]:
+        fueled_solar_energy_per_bev += charging_tuple[2]
+    return fueled_solar_energy_per_bev
 
 
 def create_plotly_table(bev_dict_specific_minute, solar_peak_power, minute):
