@@ -46,26 +46,49 @@ def generate_charging_power_figure():
 
     # Set axes properties
     ladestrom_bev_fig.update_xaxes(range=[480, 960], showgrid=True)
-    ladestrom_bev_fig.update_yaxes(range=[0, 2])
+    ladestrom_bev_fig.update_yaxes(range=[0, 3])
 
     ladestrom_bev_fig.update_shapes(dict(xref='x', yref='y'))
     ladestrom_bev_fig.update_layout(yaxis={'title': 'Energie in kWh'},
                                     xaxis={'title': 'Minuten'},
                                     title={'text': 'Ladeenergie pro Ladezeitraum eines BEVs',
-                                           'font': {'size': 24}, 'x': 0.5, 'xanchor': 'center'})
+                                           'font': {'size': 24}, 'x': 0.5, 'xanchor': 'center'},
+                                    template='plotly_white')
     ladestrom_bev_fig.show()
 
 
 def create_bev_number_figure(bev_data):
     waiting_list_per_minute_dict = bev_data.get_waiting_list_per_minute_dict()
-    df = pd.DataFrame(waiting_list_per_minute_dict.keys(), waiting_list_per_minute_dict.values(),
+    number_list_waiting_bevs = []
+    for list_waiting_bevs in waiting_list_per_minute_dict.values():
+        number_list_waiting_bevs.append(len(list_waiting_bevs))
+
+    df_waiting_bevs = pd.DataFrame(list(zip(waiting_list_per_minute_dict.keys(), number_list_waiting_bevs)),
                columns =['Minuten', 'Wartende BEVs'])
+
+    charging_list_per_minute_dict = bev_data.get_charging_list_per_minute_dict()
+    number_list_charging_bevs = []
+    for list_charging_bevs in charging_list_per_minute_dict.values():
+        number_list_charging_bevs.append(len(list_charging_bevs))
+
+    df_charging_bevs = pd.DataFrame(list(zip(charging_list_per_minute_dict.keys(), number_list_charging_bevs)),
+                                   columns=['Minuten', 'Ladende BEVs'])
 
     bev_number_figure = px.line()
 
-    # TODO get Number bevs waiting, get Number bevs loading
-    bev_number_figure.add_scatter(x=df['Minuten'], y=df['Wartende BEVs'],
-                           line_color='blue', name='Wartende BEVs')
+    bev_number_figure.add_scatter(x=df_waiting_bevs['Minuten'], y=df_waiting_bevs['Wartende BEVs'],
+                           line_color='orange', name='Wartende BEVs')
+
+    bev_number_figure.add_scatter(x=df_charging_bevs['Minuten'], y=df_charging_bevs['Ladende BEVs'],
+                                  line_color='green', name='Ladende BEVs')
+
+    bev_number_figure.update_layout(yaxis={'title': 'Anzahl BEVs'},
+                                    xaxis={'title': 'Minuten'},
+                                    title={'text': 'Anzahl wartender und ladender BEVs im Tagesverlauf',
+                                           'font': {'size': 24}, 'x': 0.5, 'xanchor': 'center'},
+                                    template='plotly_white')
+
+    bev_number_figure.show()
 
 
 def create_available_solar_power_figure_quadratic_interpolation(solar_peak_power):

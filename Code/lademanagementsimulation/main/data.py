@@ -14,6 +14,12 @@ class BevData:
     def get_waiting_list_per_minute_dict(self):
         return self.waiting_list_per_minute_dict
 
+    def add_charging_list_to_dict(self, minute, charging_list):
+        self.charging_list_per_minute_dict[minute] = charging_list
+
+    def get_charging_list_per_minute_dict(self):
+        return self.charging_list_per_minute_dict
+
 
 def get_solar_radiation_dataframe():
     df_solar_radiation = pd.read_csv('data_files/sonneneinstrahlung.csv', sep=';')
