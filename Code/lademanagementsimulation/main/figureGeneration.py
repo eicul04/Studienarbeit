@@ -46,7 +46,7 @@ def generate_charging_power_figure():
 
     # Set axes properties
     ladestrom_bev_fig.update_xaxes(range=[480, 960], showgrid=True)
-    ladestrom_bev_fig.update_yaxes(range=[0, 3])
+    ladestrom_bev_fig.update_yaxes(range=[0, 10])
 
     ladestrom_bev_fig.update_shapes(dict(xref='x', yref='y'))
     ladestrom_bev_fig.update_layout(yaxis={'title': 'Energie in kWh'},

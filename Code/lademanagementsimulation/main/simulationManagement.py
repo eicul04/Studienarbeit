@@ -157,6 +157,27 @@ class ChargingBevsList:
         return len(self.charging_bevs_list)
 
 
+class AlreadyChargedBevsList:
+
+    def __init__(self):
+        self.already_charged_bevs_list = []
+
+    def get_charging_bevs_list(self):
+        return self.already_charged_bevs_list
+
+    def get_first_charging_bev_of_list(self):
+        return self.already_charged_bevs_list[0]
+
+    def add_bev(self, id_bev):
+        self.already_charged_bevs_list.append(id_bev)
+
+    def remove_bev(self, id_bev):
+        self.already_charged_bevs_list.remove(id_bev)
+
+    def get_number_of_charging_bevs(self):
+        return len(self.already_charged_bevs_list)
+
+
 class BevParkingManagement:
 
     def __init__(self, number_bevs_per_day):
