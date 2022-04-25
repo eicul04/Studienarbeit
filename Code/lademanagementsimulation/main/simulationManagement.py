@@ -1,5 +1,5 @@
 import timeTransformation
-from bevParkingManagementCalculation import calculate_unused_solar_energy, calculate_new_fueled_solar_energy
+from bevParkingManagementCalculation import calculate_new_fueled_solar_energy
 from enum import Enum
 import random
 
@@ -186,11 +186,6 @@ class BevParkingManagement:
         self.already_charged_bevs_list = AlreadyChargedBevsList()
         self.bevs_dict = BevDictionary(number_bevs_per_day)
         self.bevs_to_remove = set()
-        self.unused_solar_energy = 0
-
-    def set_unused_solar_energy(self, available_solar_power):
-        new_unused_solar_energy = calculate_unused_solar_energy(available_solar_power)
-        self.unused_solar_energy += new_unused_solar_energy
 
     def start_charging(self, id_bev, current_minute):
         self.charging_bevs_list.add_bev(id_bev)
@@ -199,7 +194,6 @@ class BevParkingManagement:
         self.bevs_dict.add_charging_data(id_bev, current_minute)
 
     def stop_charging(self, id_bev):
-        #self.waiting_bevs_list.add_bev(id_bev)
         self.bevs_to_remove.add(id_bev)
         self.bevs_dict.set_parking_state(id_bev, ParkingState.WAITING)
 
