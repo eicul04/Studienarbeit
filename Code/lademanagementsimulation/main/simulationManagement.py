@@ -1,5 +1,5 @@
 import timeTransformation
-from bevParkingManagementCalculation import calculate_new_fueled_solar_energy
+from simulationManagementCalculation import calculate_new_fueled_solar_energy
 from enum import Enum
 import random
 

@@ -1,5 +1,5 @@
 import timeTransformation
-from bevParkingManagementCalculation import calculate_parking_end, calculate_charging_time
+from simulationManagementCalculation import calculate_parking_end, calculate_charging_time
 
 
 def check_if_parking_time_over(current_minute, bev_parking_management):

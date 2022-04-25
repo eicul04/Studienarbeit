@@ -1,17 +1,12 @@
 import copy
 from enum import Enum
 from simulationData import create_plotly_table
+from simulationManagementCalculation import calculate_charging_time
+from simulationManagementChecks import check_if_parking_time_over
 
-import bevParkingManagementCalculation
-import bevParkingManagementChecks
 import numpy as np
 import dataChecks
 import data
-import simulationData
-
-
-# TODO Visualization: Diagramm Anzahl Waiting und Charging BEVs
-# TODO Fairness: weitere Listen: BEVs die schon einmal geladen haben (und noch da sind)
 
 
 class Algorithm(Enum):
@@ -31,18 +26,20 @@ def simulate_day(solar_peak_power, max_charging_time, charging_power_pro_bev, be
     day_in_minute_steps = list(np.around(np.arange(480, 960 + 1, 1), 1))
     for minute in day_in_minute_steps:
         check_and_update_parking_data(solar_peak_power, minute, max_charging_time,
-                                      charging_power_pro_bev, bev_parking_management, algorithm_module, bev_data, simulation_data)
+                                      charging_power_pro_bev, bev_parking_management, algorithm_module, bev_data,
+                                      simulation_data)
         safe_bev_dict_per_minute(minute, bev_parking_management, bev_data, table_dict, solar_peak_power)
         safe_waiting_list_per_minute(bev_parking_management, simulation_data, minute)
         safe_charging_list_per_minute(bev_parking_management, simulation_data, minute)
 
 
 def check_and_update_parking_data(solar_peak_power, minute, max_charging_time,
-                                  charging_power_pro_bev, bev_parking_management, algorithm_module, bev_data, simulation_data):
+                                  charging_power_pro_bev, bev_parking_management, algorithm_module, bev_data,
+                                  simulation_data):
     bev_parking_management.update_waiting_bevs(minute)
     update_charging_time(minute, bev_parking_management)
     check_if_charging_time_over(minute, max_charging_time, bev_parking_management, algorithm_module)
-    bevParkingManagementChecks.check_if_parking_time_over(minute, bev_parking_management)
+    check_if_parking_time_over(minute, bev_parking_management)
     if dataChecks.check_availability_solar_power(solar_peak_power, minute):
         available_solar_power = data.get_available_solar_power(solar_peak_power, minute)
         update_charging_data(minute, available_solar_power, charging_power_pro_bev, bev_parking_management,
@@ -69,7 +66,7 @@ def remove_charging_bevs(overflow_of_bevs_charging, bev_parking_management, algo
 def check_if_charging_time_over(current_minute, max_charging_time, bev_parking_management, algorithm_module):
     for id_bev in bev_parking_management.charging_bevs_list.get_charging_bevs_list():
         charging_start = bev_parking_management.bevs_dict.get_charging_start(id_bev)
-        charging_time = bevParkingManagementCalculation.calculate_charging_time(current_minute, charging_start)
+        charging_time = calculate_charging_time(current_minute, charging_start)
         if charging_time >= max_charging_time:
             algorithm_module.after_charging(id_bev, bev_parking_management)
             bev_parking_management.stop_charging(id_bev)
@@ -109,8 +106,7 @@ def update_charging_bevs(number_of_virtual_charging_stations, number_of_charging
 
 def update_charging_time(minute, bev_parking_management):
     for id_bev in bev_parking_management.charging_bevs_list.get_charging_bevs_list():
-        charging_time = bevParkingManagementCalculation \
-            .calculate_charging_time(minute, bev_parking_management.bevs_dict.get_charging_start(id_bev))
+        charging_time = calculate_charging_time(minute, bev_parking_management.bevs_dict.get_charging_start(id_bev))
         bev_parking_management.bevs_dict.set_charging_time(id_bev, charging_time)
 
 

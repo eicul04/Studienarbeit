@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 
 import data
-from bevParkingManagementCalculation import calculate_unused_solar_energy
+from simulationManagementCalculation import calculate_unused_solar_energy
 from timeTransformation import as_time_of_day_from_hour, as_time_of_day_from_minute
 
 

@@ -49,7 +49,7 @@ def create_jupyter_dash_app(solar_peak_power):
         graph.update_layout(template='plotly_white',
                             yaxis={'title': 'Leistung in kW'},
                             xaxis={'title': 'Uhrzeit'},
-                            title={'text': 'Einflussparameter',
+                            title={'text': 'Simulation Eingangsdaten',
                                    'font': {'size': 24}, 'x': 0.5, 'xanchor': 'center'})
         return graph
 
