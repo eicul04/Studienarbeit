@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 
 import data
-from simulationManagementCalculation import calculate_unused_solar_energy
+from simulationService import calculate_unused_solar_energy
 from timeTransformation import as_time_of_day_from_hour, as_time_of_day_from_minute
 
 
@@ -14,8 +14,8 @@ class SimulationData:
         self.available_solar_power_per_bev_per_minute_dict = {}
         self.unused_solar_energy = 0
 
-    def add_available_solar_power_per_bev_to_dict(self, minute, available_solar_power_per_minute):
-        self.available_solar_power_per_bev_per_minute_dict[minute] = available_solar_power_per_minute
+    def add_available_solar_power_per_bev_to_dict(self, minute, available_solar_power_per_bev):
+        self.available_solar_power_per_bev_per_minute_dict[minute] = round(available_solar_power_per_bev, 2)
 
     def add_waiting_list_to_dict(self, minute, waiting_list):
         self.waiting_list_per_minute_dict[minute] = waiting_list

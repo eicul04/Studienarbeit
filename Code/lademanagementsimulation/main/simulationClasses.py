@@ -1,5 +1,5 @@
 import timeTransformation
-from simulationManagementCalculation import calculate_new_fueled_solar_energy
+from simulationService import calculate_new_fueled_solar_energy
 from enum import Enum
 import random
 
@@ -178,7 +178,7 @@ class AlreadyChargedBevsList:
         return len(self.already_charged_bevs_list)
 
 
-class BevParkingManagement:
+class SimulationDay:
 
     def __init__(self, number_bevs_per_day):
         self.charging_bevs_list = ChargingBevsList()

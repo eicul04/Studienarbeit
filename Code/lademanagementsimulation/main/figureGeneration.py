@@ -5,7 +5,7 @@ import scipy as sp
 import scipy.interpolate
 from matplotlib import pyplot as plt
 
-import simulationManagement
+import simulationClasses
 import data
 import plotly.graph_objects as go
 
