@@ -3,6 +3,7 @@ from enum import Enum
 from simulationData import create_plotly_table
 from simulationManagementCalculation import calculate_charging_time
 from simulationManagementChecks import check_if_parking_time_over
+from calculation import calculate_available_solar_power_per_bev
 
 import numpy as np
 import dataChecks
@@ -31,6 +32,7 @@ def simulate_day(solar_peak_power, max_charging_time, charging_power_pro_bev, be
         safe_bev_dict_per_minute(minute, bev_parking_management, bev_data, table_dict, solar_peak_power)
         safe_waiting_list_per_minute(bev_parking_management, simulation_data, minute)
         safe_charging_list_per_minute(bev_parking_management, simulation_data, minute)
+        safe_available_solar_power_per_bev_per_minute(simulation_data, minute, solar_peak_power)
 
 
 def check_and_update_parking_data(solar_peak_power, minute, max_charging_time,
@@ -162,6 +164,12 @@ def safe_waiting_list_per_minute(bev_parking_management, simulation_data, minute
 def safe_charging_list_per_minute(bev_parking_management, simulation_data, minute):
     charging_list = copy.deepcopy(bev_parking_management.charging_bevs_list.get_charging_bevs_list())
     simulation_data.add_charging_list_to_dict(minute, charging_list)
+
+
+def safe_available_solar_power_per_bev_per_minute(simulation_data, minute, solar_peak_power):
+    number_of_waiting_bevs = simulation_data.waiting_list_per_minute_dict[minute]
+    available_solar_power_per_minute = calculate_available_solar_power_per_bev(solar_peak_power, number_of_waiting_bevs, minute)
+    simulation_data.add_available_solar_power_per_bev_to_dict(minute, available_solar_power_per_minute)
 
 
 def safe_unused_solar_energy(available_solar_power, simulation_data):

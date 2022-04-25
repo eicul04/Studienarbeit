@@ -11,7 +11,11 @@ class SimulationData:
         self.waiting_list_per_minute_dict = {}
         self.charging_list_per_minute_dict = {}
         self.already_charged_list_per_minute_dict = {}
+        self.available_solar_power_per_bev_per_minute_dict = {}
         self.unused_solar_energy = 0
+
+    def add_available_solar_power_per_bev_to_dict(self, minute, available_solar_power_per_minute):
+        self.available_solar_power_per_bev_per_minute_dict[minute] = available_solar_power_per_minute
 
     def add_waiting_list_to_dict(self, minute, waiting_list):
         self.waiting_list_per_minute_dict[minute] = waiting_list
