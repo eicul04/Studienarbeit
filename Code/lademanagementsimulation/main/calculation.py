@@ -3,11 +3,9 @@ import numpy as np
 import scipy as sp
 import scipy.interpolate
 import data
+from timeTransformation import transform_to_minutes, df_in_minutes
 
-# TODO refactor static code
-import timeTransformation
-
-df_time = pd.DataFrame({"Uhrzeit": pd.date_range(start="08:00:00", end="16:00:00", freq='1h')})
+list_time = ['8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00']
 
 
 def calculate_solar_power_course(df_sonneneinstrahlung, solarpeakleistung):
@@ -24,7 +22,7 @@ def calculate_solar_power(df_sonneneinstrahlung, solarpeakleistung):
 
 
 def calculate_available_solar_power_course(df_solar_power, df_electricity_own_consumption):
-    df_available_solar_power = df_time.copy()
+    df_available_solar_power = pd.DataFrame(list_time, columns=['Uhrzeit'])
     df_available_solar_power['Verfügbare Solarleistung'] = df_solar_power.get(
         'Solarleistung') - df_electricity_own_consumption.get(
         'Stromeigenverbrauch')
@@ -41,8 +39,7 @@ def calculate_available_solar_power_per_bev(solar_peak_power, number_of_waiting_
 
 
 def get_available_solar_power_interpolated(solar_peak_power, minute):
-    time_original = data.get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'].dt.hour
-    time_original_in_minutes = timeTransformation.df_in_minutes(time_original)
+    time_original_in_minutes = transform_to_minutes(data.get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'])
     available_solar_power_original = data.get_available_solar_power_dataframe(solar_peak_power)[
         'Verfügbare Solarleistung']
 

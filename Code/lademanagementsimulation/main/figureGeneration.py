@@ -1,5 +1,3 @@
-import time
-
 import pandas as pd
 import plotly.express as px
 import numpy as np
@@ -9,8 +7,9 @@ from matplotlib import pyplot as plt
 
 import simulationManagement
 import data
-import timeTransformation
 import plotly.graph_objects as go
+
+from timeTransformation import transform_to_minutes, df_in_minutes
 
 ladestrom_bev_fig = go.Figure()
 
@@ -93,8 +92,7 @@ def create_bev_number_figure(bev_data):
 
 def create_available_solar_power_figure_quadratic_interpolation(solar_peak_power):
     # Get data
-    time_original = data.get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'].dt.hour
-    time_original_in_minutes = timeTransformation.df_in_minutes(time_original)
+    time_original_in_minutes = transform_to_minutes(data.get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'])
     available_solar_power_original = data.get_available_solar_power_dataframe(solar_peak_power)[
         'Verfügbare Solarleistung']
 

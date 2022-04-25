@@ -16,6 +16,7 @@ def create_jupyter_dash_app(solar_peak_power):
     df_solar_radiation = data.get_solar_radiation_dataframe()
     df_electricity_own_consumption = data.get_electricity_own_consumption()
     df_solar_power = data.get_solar_power_dataframe(solar_peak_power)
+    df_available_solar_power = data.get_available_solar_power_dataframe(solar_peak_power)
 
 
     app.layout = html.Div(
@@ -25,6 +26,7 @@ def create_jupyter_dash_app(solar_peak_power):
                 options=[
                     {'label': 'Solarleistung', 'value': 'Solarleistung'},
                     {'label': 'Stromeigenverbrauch DHBW Karlsruhe', 'value': 'Stromeigenverbrauch'},
+                    {'label': 'Verfügbare Solarleistung', 'value': 'Verfügbare Solarleistung'},
                 ],
                 value=[],
             ),
@@ -45,6 +47,11 @@ def create_jupyter_dash_app(solar_peak_power):
                 graph.add_scatter(x=df_electricity_own_consumption['Uhrzeit'],
                                   y=df_electricity_own_consumption['Stromeigenverbrauch'],
                                   line_color='red', name='Stromeigenverbrauch')
+            elif element == 'Verfügbare Solarleistung':
+                graph.add_scatter(x=df_available_solar_power['Uhrzeit'],
+                                  y=df_available_solar_power['Verfügbare Solarleistung'],
+                                  line_color='green', name='Verfügbare Solarleistung'
+                                  )
 
         graph.update_layout(template='plotly_white',
                             yaxis={'title': 'Leistung in kW'},
