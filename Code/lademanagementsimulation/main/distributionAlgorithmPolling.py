@@ -137,7 +137,7 @@ def calculate_number_of_new_bevs_charging(number_of_virtual_charging_stations, n
     number_of_free_virtual_charging_stations = calculate_number_of_free_virtual_charging_stations(
         number_of_virtual_charging_stations, number_of_charging_bevs)
     if bev_parking_management.waiting_bevs_list.get_number_of_waiting_bevs() == 0:
-        safe_unused_solar_power_per_minute(available_solar_power, simulation_data, minute)
+        safe_unused_solar_energy(available_solar_power, simulation_data)
         print("Solarleistung wird in Leitung eingespeist")
         return 0
     elif bev_parking_management.waiting_bevs_list.get_number_of_waiting_bevs() < number_of_free_virtual_charging_stations:
@@ -168,5 +168,5 @@ def safe_charging_list_per_minute(bev_parking_management, simulation_data, minut
     simulation_data.add_charging_list_to_dict(minute, charging_list)
 
 
-def safe_unused_solar_power_per_minute(available_solar_power, simulation_data, minute):
-    simulation_data.add_unused_solar_energy_to_dict(minute, copy.deepcopy(available_solar_power))
+def safe_unused_solar_energy(available_solar_power, simulation_data):
+    simulation_data.add_unused_solar_energy(copy.deepcopy(available_solar_power))

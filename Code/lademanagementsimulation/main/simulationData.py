@@ -11,7 +11,7 @@ class SimulationData:
         self.waiting_list_per_minute_dict = {}
         self.charging_list_per_minute_dict = {}
         self.already_charged_list_per_minute_dict = {}
-        self.unused_solar_energy_per_minute_dict = {}
+        self.unused_solar_energy = 0
 
     def add_waiting_list_to_dict(self, minute, waiting_list):
         self.waiting_list_per_minute_dict[minute] = waiting_list
@@ -31,21 +31,11 @@ class SimulationData:
     def get_already_charged_list_per_minute_dict(self):
         return self.already_charged_list_per_minute_dict
 
-    def add_unused_solar_energy_to_dict(self, minute, unused_solar_power):
-        unused_solar_energy = calculate_unused_solar_energy(unused_solar_power)
-        self.unused_solar_energy_per_minute_dict[minute] = unused_solar_energy
-
-    def get_unused_solar_energy_per_minute_dict(self):
-        return self.unused_solar_energy_per_minute_dict, 2
-
-    def get_unused_solar_energy_for_last_minute(self):
-        print(list(self.unused_solar_energy_per_minute_dict.values()), "Liste mit unbenutzten Solar energie werten")
-        if len(list(self.unused_solar_energy_per_minute_dict.values())) != 0:
-            return list(self.unused_solar_energy_per_minute_dict.values())[-1]
-        return 0
+    def add_unused_solar_energy(self, unused_solar_power):
+        self.unused_solar_energy += calculate_unused_solar_energy(unused_solar_power)
 
     def get_total_number_of_unused_solar_energy(self):
-        return self.get_unused_solar_energy_for_last_minute()
+        return self.unused_solar_energy
 
 
 class BevData:
@@ -55,7 +45,6 @@ class BevData:
         self.total_number_of_charged_bevs = 0
         self.sum_of_fueled_solar_energy = 0
         self.interrupted_charging_processes = 0
-
 
     def add_bev_data_per_minute_dict(self, minute, current_bevs_dict):
         self.bev_data_per_minute_dict[minute] = current_bevs_dict
