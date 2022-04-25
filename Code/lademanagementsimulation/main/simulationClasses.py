@@ -215,3 +215,11 @@ class SimulationDay:
                 self.waiting_bevs_list.add_bev(id_bev)
                 self.bevs_dict.set_parking_state(id_bev, ParkingState.WAITING)
 
+
+class ForecastSimulationDay:
+
+    def __init__(self, bevs_dict):
+        self.bevs_dict = bevs_dict
+
+    def set_charging_time(self, id_bev, charging_tuple):
+        self.bevs_dict[id_bev][2] = charging_tuple
