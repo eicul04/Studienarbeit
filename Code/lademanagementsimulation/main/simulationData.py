@@ -127,10 +127,6 @@ def safe_charging_list_per_minute(simulation_day, simulation_data, minute):
     simulation_data.add_charging_list_to_dict(minute, charging_list)
 
 
-def safe_unused_solar_energy(available_solar_power, simulation_data):
-    simulation_data.add_unused_solar_energy(copy.deepcopy(available_solar_power))
-
-
 def get_fueled_solar_energy_per_bev(bev_data):
     fueled_solar_energy_per_bev = 0
     for charging_tuple in bev_data[2]:

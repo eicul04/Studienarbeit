@@ -26,6 +26,7 @@ def start_algorithm(simulation_data, simulation_day, maximum_charging_time, sola
     for minute in day_in_minute_steps:
         init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
     set_charging_times(simulation_data, simulation_day, maximum_charging_time, charging_power_per_bev)
+    # TODO hier geht dann der Algo richtig los, nachdem die charging List initialisiert wurde
 
 
 def init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data):

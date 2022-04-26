@@ -1,4 +1,4 @@
-from timeTransformation import in_minutes
+import copy
 
 
 def calculate_unused_solar_energy(available_solar_power):
@@ -54,3 +54,21 @@ def calculate_number_of_new_bevs_charging(number_of_virtual_charging_stations, n
 
 def calculate_overflow_of_bevs_charging(number_of_virtual_charging_stations, number_of_charging_bevs):
     return number_of_charging_bevs - number_of_virtual_charging_stations
+
+
+def update_fueled_solar_energy(available_solar_power, simulation_day):
+    number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
+    if number_of_charging_bevs != 0:
+        charging_power_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
+        for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
+            simulation_day.bevs_dict.set_fueled_solar_energy(id_bev, charging_power_per_bev)
+
+
+def update_charging_time(minute, simulation_day):
+    for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
+        charging_time = calculate_charging_time(minute, simulation_day.bevs_dict.get_charging_start(id_bev))
+        simulation_day.bevs_dict.append_new_charging_tuple(id_bev, charging_time)
+
+
+def safe_unused_solar_energy(available_solar_power, simulation_data):
+    simulation_data.add_unused_solar_energy(copy.deepcopy(available_solar_power))

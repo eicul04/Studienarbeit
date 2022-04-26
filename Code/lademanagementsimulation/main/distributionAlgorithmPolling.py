@@ -4,7 +4,8 @@ from simulateDay import simulate_day
 from simulationData import safe_charging_list_per_minute
 from simulationService import calculate_charging_time, \
     calculate_number_of_new_bevs_charging, calculate_overflow_of_bevs_charging, \
-    calculate_number_of_virtual_charging_stations, get_charging_power_per_bev
+    calculate_number_of_virtual_charging_stations, get_charging_power_per_bev, update_fueled_solar_energy, \
+    update_charging_time
 
 import numpy as np
 import dataChecks
@@ -107,19 +108,6 @@ def update_because_charging_time_over(current_minute, max_charging_time, simulat
             simulation_day.stop_charging(id_bev)
     simulation_day.remove_from_list(simulation_day.charging_bevs_list)
 
-
-def update_fueled_solar_energy(available_solar_power, simulation_day):
-    number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
-    if number_of_charging_bevs != 0:
-        charging_power_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
-        for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
-            simulation_day.bevs_dict.set_fueled_solar_energy(id_bev, charging_power_per_bev)
-
-
-def update_charging_time(minute, simulation_day):
-    for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
-        charging_time = calculate_charging_time(minute, simulation_day.bevs_dict.get_charging_start(id_bev))
-        simulation_day.bevs_dict.append_new_charging_tuple(id_bev, charging_time)
 
 
 
