@@ -1,14 +1,11 @@
 import numpy as np
-import copy
-
-from simulationClasses import ForecastSimulationDay
+from simulateDay import simulate_day
 from simulationService import calculate_parking_end
-
 
 # für ankommendes BEV Prognose berechnen
 # für alle anderen BEVs (außer für aufgeladene BEVs) Prognose anpassen
 # Störfunktion: Abweichung zum prognostizierten Tagesverlauf der BEVs erzielen
-# als Störfunktion einfach neuen SimulationDay?
+# Störfunktion ändert parking_data
 
 # keine maximale Ladezeit -> Ladezeit wird über Prognose berechnet
 # zuerst zur Vereinfachung: ich weiß wann BEVs parken und ich weiß wann wie viel verfügbarer Solarstrom
@@ -23,24 +20,31 @@ from simulationService import calculate_parking_end
 from timeTransformation import in_minutes
 
 
-def start_algorithm(simulation_data, simulation_day, maximum_charging_time):
-    init_simulation_data()
-    set_charging_times(simulation_data, simulation_day, maximum_charging_time)
-    # simulate_day() mit Anpassung, dass charging time aus bev dict gelesen wird
+def start_algorithm(simulation_data, simulation_day, maximum_charging_time, solar_peak_power,
+                    bev_data, table_dict, charging_power_per_bev):
+    day_in_minute_steps = list(np.around(np.arange(480, 960 + 1, 1), 1))
+    for minute in day_in_minute_steps:
+        init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
+    set_charging_times(simulation_data, simulation_day, maximum_charging_time, charging_power_per_bev)
 
 
-def init_simulation_data():
-    return "placeholder"
-    # im Prinzip simulate_day() aus pollingAlgorithm ausführen
+def init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data):
+    simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
 
 
-def set_charging_times(simulation_data, simulation_day, maximum_charging_time):
+def set_charging_times(simulation_data, simulation_day, maximum_charging_time, charging_power_per_bev):
     for waiting_list in simulation_data.get_waiting_list_per_minute_dict().values():
         for id_bev in waiting_list:
             available_solar_power_per_bev_in_parking_interval_dict = get_available_solar_power_in_parking_interval_dict(
                 simulation_day, id_bev, simulation_data)
-            charging_interval = get_charging_interval(available_solar_power_per_bev_in_parking_interval_dict, maximum_charging_time)
+            charging_interval = get_charging_interval(available_solar_power_per_bev_in_parking_interval_dict,
+                                                      maximum_charging_time)
             set_charging_interval(id_bev, simulation_day, charging_interval)
+            reduce_available_solar_power_because_of_charging_slot(charging_power_per_bev,
+                                                                  get_minute_when_max_available_solar_power_per_bev(
+                                                                      available_solar_power_per_bev_in_parking_interval_dict),
+                                                                  simulation_data)
+    print(simulation_day.bevs_dict.get_bevs_dict())
 
 
 def get_parking_start(simulation_day, id_bev):
@@ -56,46 +60,41 @@ def get_parking_end(simulation_day, id_bev):
                                  get_parking_time(simulation_day, id_bev))
 
 
-def get_available_solar_power_per_bev_per_minute_dict(simulation_data):
-    return simulation_data.available_solar_power_per_bev_per_minute_dict
-
-
 def get_available_solar_power_in_parking_interval_dict(simulation_day, id_bev, simulation_data):
     parking_start = get_parking_start(simulation_day, id_bev)
     parking_end = get_parking_end(simulation_day, id_bev)
-    available_solar_power_per_bev_per_minute_dict = get_available_solar_power_per_bev_per_minute_dict(
-        simulation_data)
     parking_interval_in_minutes_as_list = np.arange(in_minutes(parking_start), in_minutes(parking_end), 1)
-    return {key: available_solar_power_per_bev_per_minute_dict[key] for key in
-            available_solar_power_per_bev_per_minute_dict.keys() & parking_interval_in_minutes_as_list}
+    return {key: simulation_data.available_solar_power_per_bev_per_minute_dict[key] for key in
+            simulation_data.available_solar_power_per_bev_per_minute_dict.keys() & parking_interval_in_minutes_as_list}
+
+
+def get_minute_when_max_available_solar_power_per_bev(available_solar_power_per_bev_in_parking_interval_dict):
+    return max(available_solar_power_per_bev_in_parking_interval_dict,
+               key=available_solar_power_per_bev_in_parking_interval_dict.get)
+
+
+def get_max_available_solar_power_per_bev(available_solar_power_per_bev_in_parking_interval_dict):
+    return max(available_solar_power_per_bev_in_parking_interval_dict.values())
 
 
 def get_charging_interval(available_solar_power_per_bev_in_parking_interval_dict, maximum_charging_time):
-    max_minute = max(available_solar_power_per_bev_in_parking_interval_dict, key=available_solar_power_per_bev_in_parking_interval_dict.get)
-    print(max_minute, "Max Minute")
-    max_available_solar_power_per_bev = max(available_solar_power_per_bev_in_parking_interval_dict.values())
-    print(max_available_solar_power_per_bev, "Max Verfügbarer Solarstrom pro BEV")
-    # max_available_solar_power_per_bev ist Mittelpunkt für Ladezeitraum, sagen wir erstmal alle laden 30 min
-    # dann setzten wir Ladestart auf max_available_solar_power_per_bev-15min und Ladeende auf max_available_solar_power_per_bev+15min
+    print(get_minute_when_max_available_solar_power_per_bev(available_solar_power_per_bev_in_parking_interval_dict),
+          "Max Minute")
+    print(get_max_available_solar_power_per_bev(available_solar_power_per_bev_in_parking_interval_dict),
+          "Max Verfügbarer Solarstrom pro BEV")
     # TODO Abfrage ob Charging Start außerhalb von Ladeintervall ( 8.00 - 16.00 Uhr liegt)
-    charging_start = int(max_minute - (maximum_charging_time / 2))
-    charging_end = int(max_minute + (maximum_charging_time / 2))
+    minute_when_max_available_solar_power_per_bev = get_minute_when_max_available_solar_power_per_bev(
+        available_solar_power_per_bev_in_parking_interval_dict)
+    charging_start = int(minute_when_max_available_solar_power_per_bev - (maximum_charging_time / 2))
+    charging_end = int(minute_when_max_available_solar_power_per_bev + (maximum_charging_time / 2))
     charging_interval = (charging_start, charging_end)
-    print(charging_interval, "Ladeintervall")
     return charging_interval
 
 
 def set_charging_interval(id_bev, simulation_day, charging_tuple):
-    # TODO sicher ob eine neue Klasse ForecastSimulationDay, die dann alte BEV Generierung zugewiesen bekommt
-    #  bzw. neue BEV Generierung bekommt ???
-    #simulation_day.bev_dict.set_charging_time(charging_interval)
-    # Remove charging_data, parking_state, ... oder nur ID  und parking_data behalten
-    # ForecastSimulationDay {id: (parking_start, parking_end), (charging_start, charging_end)}
-    generated_bevs_dict = copy.deepcopy(simulation_day.bevs_dict.get_bevs_dict())
-    forecastSimulationDay = ForecastSimulationDay(generated_bevs_dict)
-    forecastSimulationDay.set_charging_time(id_bev, charging_tuple)
+    simulation_day.bevs_dict.set_charging_tuple(id_bev, charging_tuple)
 
-    # in diesem Zeitraum lade mein BEV mit ladeleistung_pro_bev
-    # bev_dict.set_charging_time()
-    # available_solar_power reduzieren: available_solar_power_per_bev - ladeleistung_pro_bev
-    # und dann von nächstem BEV max bestimmen
+
+def reduce_available_solar_power_because_of_charging_slot(charging_power_per_bev, max_minute, simulation_data):
+    simulation_data.available_solar_power_per_bev_per_minute_dict[max_minute] -= charging_power_per_bev
+

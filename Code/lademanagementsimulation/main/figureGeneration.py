@@ -4,12 +4,10 @@ import numpy as np
 import scipy as sp
 import scipy.interpolate
 from matplotlib import pyplot as plt
-
-import simulationClasses
 import data
 import plotly.graph_objects as go
 
-from timeTransformation import transform_to_minutes, df_in_minutes
+from timeTransformation import transform_to_minutes
 
 ladestrom_bev_fig = go.Figure()
 
@@ -20,14 +18,15 @@ def create_available_solar_power_figure(solar_peak_power):
     return available_solar_power_fig
 
 
-def create_charging_power_figure(bev_parking_management):
-    add_rectangles_to_charging_power_figure(bev_parking_management)
+def create_charging_power_figure(simulation_day):
+    add_rectangles_to_charging_power_figure(simulation_day)
     generate_charging_power_figure()
 
 
-def add_rectangles_to_charging_power_figure(bev_parking_management):
-    for id_bev in bev_parking_management.bevs_dict.get_bevs_dict():
-        for charging_tuple in bev_parking_management.bevs_dict.get_charging_data(id_bev):
+# TODO bei prognose Algorithmus untere Funktion => schöner machen
+def add_rectangles_to_charging_power_figure(simulation_day):
+    for id_bev in simulation_day.bevs_dict.get_bevs_dict():
+        for charging_tuple in simulation_day.bevs_dict.get_charging_data(id_bev):
             # x0 = charging_start, x1 = charging_end (charging_start + charging_time),
             # y0 = 0 oder stromeigenverbrauch, y1 = charging_energy oder stromeigenverbrauch + charging_energy
             charging_start = charging_tuple[0]
@@ -38,6 +37,21 @@ def add_rectangles_to_charging_power_figure(bev_parking_management):
                                         x0=charging_start, y0=0, x1=charging_end, y1=charging_energy,
                                         line=dict(color="green"),
                                         )
+
+
+def add_rectangles_to_charging_power_figure_forecast(simulation_day):
+    for id_bev in simulation_day.bevs_dict.get_bevs_dict():
+        charging_tuple = simulation_day.bevs_dict.get_charging_data(id_bev)
+        # x0 = charging_start, x1 = charging_end (charging_start + charging_time),
+        # y0 = 0 oder stromeigenverbrauch, y1 = charging_energy oder stromeigenverbrauch + charging_energy
+        charging_start = charging_tuple[0]
+        charging_time = charging_tuple[1]
+        charging_end = charging_start + charging_time
+        charging_energy = charging_tuple[2]
+        ladestrom_bev_fig.add_shape(type="rect",
+                                    x0=charging_start, y0=0, x1=charging_end, y1=charging_energy,
+                                    line=dict(color="green"),
+                                    )
 
 
 def generate_charging_power_figure():
@@ -63,7 +77,7 @@ def create_bev_number_figure(bev_data):
         number_list_waiting_bevs.append(len(list_waiting_bevs))
 
     df_waiting_bevs = pd.DataFrame(list(zip(waiting_list_per_minute_dict.keys(), number_list_waiting_bevs)),
-               columns =['Minuten', 'Wartende BEVs'])
+                                   columns=['Minuten', 'Wartende BEVs'])
 
     charging_list_per_minute_dict = bev_data.get_charging_list_per_minute_dict()
     number_list_charging_bevs = []
@@ -71,12 +85,12 @@ def create_bev_number_figure(bev_data):
         number_list_charging_bevs.append(len(list_charging_bevs))
 
     df_charging_bevs = pd.DataFrame(list(zip(charging_list_per_minute_dict.keys(), number_list_charging_bevs)),
-                                   columns=['Minuten', 'Ladende BEVs'])
+                                    columns=['Minuten', 'Ladende BEVs'])
 
     bev_number_figure = px.line()
 
     bev_number_figure.add_scatter(x=df_waiting_bevs['Minuten'], y=df_waiting_bevs['Wartende BEVs'],
-                           line_color='orange', name='Wartende BEVs')
+                                  line_color='orange', name='Wartende BEVs')
 
     bev_number_figure.add_scatter(x=df_charging_bevs['Minuten'], y=df_charging_bevs['Ladende BEVs'],
                                   line_color='green', name='Ladende BEVs')
@@ -92,7 +106,8 @@ def create_bev_number_figure(bev_data):
 
 def create_available_solar_power_figure_quadratic_interpolation(solar_peak_power):
     # Get data
-    time_original_in_minutes = transform_to_minutes(data.get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'])
+    time_original_in_minutes = transform_to_minutes(
+        data.get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'])
     available_solar_power_original = data.get_available_solar_power_dataframe(solar_peak_power)[
         'Verfügbare Solarleistung']
 
