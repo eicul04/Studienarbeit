@@ -74,7 +74,12 @@ class BevDictionary:
 
     def add_charging_data(self, id_bev, current_minute):
         bev_charging_data = self.bevs_dict[id_bev][2]
-        bev_charging_data.set_charging_tuple((current_minute, 0, 0))
+        bev_charging_data.append((current_minute, 0, 0))
+
+    # TODO replace 0 through charging_energy
+    def add_charging_data_for_forecast(self, id_bev, charging_start, charging_end):
+        bev_charging_data = self.bevs_dict[id_bev][2]
+        bev_charging_data.append((charging_start, charging_end, 0))
 
     def get_charging_time(self, id_bev):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
@@ -96,16 +101,13 @@ class BevDictionary:
         latest_charging = len(bev_charging_data) - 1
         return bev_charging_data[latest_charging]
 
-    def append_new_charging_tuple(self, id_bev, charging_time):
+    def set_charging_time(self, id_bev, charging_time):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
         latest_charging_tuple_as_list = list(latest_charging_tuple)
         latest_charging_tuple_as_list[1] = charging_time
         new_latest_charging_tuple = tuple(latest_charging_tuple_as_list)
         self.get_charging_data(id_bev).remove(latest_charging_tuple)
         self.get_charging_data(id_bev).set_charging_tuple(new_latest_charging_tuple)
-
-    def set_charging_tuple(self, id_bev, charging_tuple):
-        self.bevs_dict[id_bev][2] = charging_tuple
 
     def set_fueled_solar_energy(self, id_bev, charging_power):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)

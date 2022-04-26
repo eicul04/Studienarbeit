@@ -17,6 +17,10 @@ def calculate_parking_end(parking_start, parking_time):
     return parking_start + parking_time
 
 
+def calculate_charging_end(charging_start, charging_time):
+    return charging_start + charging_time
+
+
 def calculate_charging_time(current_minute, charging_start):
     return current_minute - charging_start
 
@@ -67,7 +71,7 @@ def update_fueled_solar_energy(available_solar_power, simulation_day):
 def update_charging_time(minute, simulation_day):
     for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
         charging_time = calculate_charging_time(minute, simulation_day.bevs_dict.get_charging_start(id_bev))
-        simulation_day.bevs_dict.append_new_charging_tuple(id_bev, charging_time)
+        simulation_day.bevs_dict.set_charging_time(id_bev, charging_time)
 
 
 def safe_unused_solar_energy(available_solar_power, simulation_data):

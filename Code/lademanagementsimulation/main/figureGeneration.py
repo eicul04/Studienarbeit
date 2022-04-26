@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 from itertools import chain
 
 from timeTransformation import transform_to_minutes
+from simulationService import calculate_charging_end
 
 ladestrom_bev_fig = go.Figure()
 
@@ -32,54 +33,46 @@ def add_rectangles_to_charging_power_figure(simulation_day):
             # y0 = 0 oder stromeigenverbrauch, y1 = charging_energy oder stromeigenverbrauch + charging_energy
             charging_start = charging_tuple[0]
             charging_time = charging_tuple[1]
-            charging_end = charging_start + charging_time
+            charging_end = calculate_charging_end(charging_start, charging_time)
             charging_energy = charging_tuple[2]
-            ladestrom_bev_fig.add_shape(type="rect",
-                                        x0=charging_start, y0=0, x1=charging_end, y1=charging_energy,
-                                        line=dict(color="green"),
-                                        )
+            draw_rectangle(charging_start, 0, charging_end, charging_energy)
+
+
+def get_charging_start_with_associated_bev_ids(simulation_day):
+    charging_starts_with_associated_bev_ids = {}
+    for key, value in simulation_day.bevs_dict.get_bevs_dict().items():
+        charging_starts_with_associated_bev_ids.setdefault(value[2][0][0], set()).add(key)
+    # result = set(chain.from_iterable(values for key, values in charging_starts_with_associated_bev_ids.items()
+    #             if len(values) > 1))
+    return charging_starts_with_associated_bev_ids
 
 
 # TODO ID auf rectangle schreiben
 def add_rectangles_to_charging_power_figure_forecast(simulation_day):
-    #for charging_tuple in simulation_day.bevs_dict.get_bevs_dict().values()[2]:
+    charging_starts_with_associated_bev_ids = get_charging_start_with_associated_bev_ids(simulation_day)
+    print(charging_starts_with_associated_bev_ids)
+    for charging_start in charging_starts_with_associated_bev_ids.keys():
+        ids_bev_with_same_charging_start = list(charging_starts_with_associated_bev_ids[charging_start])
+        start_height = 0
+        for id_bev in ids_bev_with_same_charging_start:
+            print(ids_bev_with_same_charging_start, "IDs BEV with same charging start")
+            charging_end = calculate_charging_end(charging_start, simulation_day.bevs_dict.get_charging_time(id_bev))
+            # TODO replace Mock
+            charging_energy = 1
+            draw_rectangle(charging_start, start_height, charging_end, start_height + charging_energy)
+            start_height += charging_energy
+        print(start_height, "Start Höhe")
 
-
-    # finding duplicate values
-    # from dictionary using set
-    bev_ids_with_same_charging_start = {}
-    for key, value in simulation_day.bevs_dict.get_bevs_dict().items():
-        bev_ids_with_same_charging_start.setdefault(value[2][0], set()).add(key)
-
-    result = set(chain.from_iterable(values for key, values in bev_ids_with_same_charging_start.items()
-                                     if len(values) > 1))
-
-    # printing result
-    # TODO jetzt sind alle die generell ein mehrfachen charging start haben im selben result
-    #  -> trennen nach charging_start
-    print("BEV ids with same charging start", bev_ids_with_same_charging_start)
-    print("resultant key", str(result))
-    #############################################################################
-    for id_bev in simulation_day.bevs_dict.get_bevs_dict():
-        charging_tuple = simulation_day.bevs_dict.get_charging_data(id_bev)
-        # x0 = charging_start, x1 = charging_end (charging_start + charging_time),
-        # y0 = 0 oder stromeigenverbrauch, y1 = charging_energy oder stromeigenverbrauch + charging_energy
-        charging_start = charging_tuple[0]
-        charging_time = charging_tuple[1]
-        charging_end = charging_start + charging_time
-        # TODO outcomment when algo ready
-        # charging_energy = charging_tuple[2]
-        charging_energy = 1
-
-        # y0 von id bevs mit charging_start x, y0_0 ist 0, y0_1 ist 0 + charging_energy, ...
-
-        ladestrom_bev_fig.add_shape(type="rect",
-                                    x0=charging_start, y0=0, x1=charging_end, y1=charging_energy,
-                                    line=dict(color="green"),
-                                    )
 
 def stack_rectangles_with_same_charging_start():
     print("stacked")
+
+
+def draw_rectangle(x0, y0, x1, y1):
+    return ladestrom_bev_fig.add_shape(type="rect",
+                                       x0=x0, y0=y0, x1=x1, y1=y1,
+                                       line=dict(color="green"),
+                                       )
 
 
 def generate_charging_power_figure():
