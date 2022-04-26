@@ -78,8 +78,8 @@ def get_charging_interval(available_solar_power_per_bev_in_parking_interval_dict
     # max_available_solar_power_per_bev ist Mittelpunkt für Ladezeitraum, sagen wir erstmal alle laden 30 min
     # dann setzten wir Ladestart auf max_available_solar_power_per_bev-15min und Ladeende auf max_available_solar_power_per_bev+15min
     # TODO Abfrage ob Charging Start außerhalb von Ladeintervall ( 8.00 - 16.00 Uhr liegt)
-    charging_start = max_minute - (maximum_charging_time / 2)
-    charging_end = max_minute + (maximum_charging_time / 2)
+    charging_start = int(max_minute - (maximum_charging_time / 2))
+    charging_end = int(max_minute + (maximum_charging_time / 2))
     charging_interval = (charging_start, charging_end)
     print(charging_interval, "Ladeintervall")
     return charging_interval

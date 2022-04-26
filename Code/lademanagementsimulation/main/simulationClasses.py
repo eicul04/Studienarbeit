@@ -131,6 +131,7 @@ class WaitingBevsList:
 
     def remove_bev(self, id_bev):
         self.waiting_bevs_list.remove(id_bev)
+        print(self.waiting_bevs_list, id_bev, "Waiting list with Id removed")
 
     def get_number_of_waiting_bevs(self):
         return len(self.waiting_bevs_list)
@@ -209,7 +210,7 @@ class SimulationDay:
             list_with_bev_to_remove.remove_bev(id_bev)
         self.bevs_to_remove = set()
 
-    def update_waiting_bevs(self, minute):
+    def add_arriving_waiting_bevs(self, minute):
         for id_bev in self.bevs_dict.get_keys():
             if timeTransformation.in_minutes(self.bevs_dict.get_parking_start(id_bev)) == minute:
                 self.waiting_bevs_list.add_bev(id_bev)

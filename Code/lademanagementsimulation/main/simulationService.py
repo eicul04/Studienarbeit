@@ -1,30 +1,6 @@
 from timeTransformation import in_minutes
 
 
-def check_if_parking_time_over(current_minute, bev_parking_management):
-    check_parking_time_in_waiting_bevs_list(current_minute, bev_parking_management.waiting_bevs_list,
-                                            bev_parking_management)
-    check_parking_time_in_charging_bevs_list(current_minute, bev_parking_management.charging_bevs_list,
-                                             bev_parking_management)
-
-
-def check_parking_time_in_waiting_bevs_list(current_minute, waiting_bevs_list, bev_parking_management):
-    for id_bev in waiting_bevs_list.get_waiting_bevs_list():
-        parking_end = calculate_parking_end(bev_parking_management.bevs_dict.get_parking_start(id_bev),
-                                            bev_parking_management.bevs_dict.get_parking_time(id_bev))
-        if in_minutes(parking_end) <= current_minute:
-            bev_parking_management.stop_parking(id_bev)
-    bev_parking_management.remove_from_list(waiting_bevs_list)
-
-
-def check_parking_time_in_charging_bevs_list(current_minute, charging_bevs_list, bev_parking_management):
-    for id_bev in charging_bevs_list.get_charging_bevs_list():
-        parking_end = calculate_parking_end(bev_parking_management.bevs_dict.get_parking_start(id_bev),
-                                            bev_parking_management.bevs_dict.get_parking_time(id_bev))
-        if in_minutes(parking_end) <= current_minute:
-            bev_parking_management.stop_parking(id_bev)
-    bev_parking_management.remove_from_list(charging_bevs_list)
-
 def calculate_unused_solar_energy(available_solar_power):
     return available_solar_power * (1 / 60)
 
@@ -45,3 +21,36 @@ def calculate_charging_time(current_minute, charging_start):
     return current_minute - charging_start
 
 
+def calculate_number_of_virtual_charging_stations(available_solar_power, charging_power_pro_bev):
+    if available_solar_power <= charging_power_pro_bev:
+        return 1
+    if available_solar_power % charging_power_pro_bev == 0:
+        return int(available_solar_power / charging_power_pro_bev)
+    remaining_charging_capacity = available_solar_power % charging_power_pro_bev
+    # + 1 für BEV, das dann die Reste tankt
+    return int((available_solar_power - remaining_charging_capacity) / charging_power_pro_bev) + 1
+
+
+def get_charging_power_per_bev(available_solar_power, number_of_charging_bevs):
+    return available_solar_power / number_of_charging_bevs
+
+
+def calculate_number_of_free_virtual_charging_stations(number_of_virtual_charging_stations, number_of_charging_bevs):
+    return number_of_virtual_charging_stations - number_of_charging_bevs
+
+
+def calculate_number_of_new_bevs_charging(number_of_virtual_charging_stations, number_of_charging_bevs, minute,
+                                          available_solar_power, simulation_day, simulation_data):
+    number_of_free_virtual_charging_stations = calculate_number_of_free_virtual_charging_stations(
+        number_of_virtual_charging_stations, number_of_charging_bevs)
+    if simulation_day.waiting_bevs_list.get_number_of_waiting_bevs() == 0:
+        safe_unused_solar_energy(available_solar_power, simulation_data)
+        print("Solarleistung wird in Leitung eingespeist")
+        return 0
+    elif simulation_day.waiting_bevs_list.get_number_of_waiting_bevs() < number_of_free_virtual_charging_stations:
+        return simulation_day.waiting_bevs_list.get_number_of_waiting_bevs()
+    return number_of_free_virtual_charging_stations
+
+
+def calculate_overflow_of_bevs_charging(number_of_virtual_charging_stations, number_of_charging_bevs):
+    return number_of_charging_bevs - number_of_virtual_charging_stations

@@ -1,6 +1,9 @@
+import copy
+
 import plotly.graph_objects as go
 
 import data
+from calculation import calculate_available_solar_power_per_bev
 from simulationService import calculate_unused_solar_energy
 from timeTransformation import as_time_of_day_from_hour, as_time_of_day_from_minute
 
@@ -96,6 +99,36 @@ class TableDict:
     def show_table(self, minute):
         fig = self.table_dict[minute]
         fig.show()
+
+
+def safe_bev_dict_per_minute(minute, simulation_day, bev_data, table_dict, solar_peak_power):
+    current_bevs_dict = copy.deepcopy(simulation_day.bevs_dict)
+    bev_data.add_bev_data_per_minute_dict(minute, current_bevs_dict)
+    bev_dict_specific_minute = bev_data.get_bev_data_per_minute_dict(minute)
+    current_table = create_plotly_table(bev_dict_specific_minute, solar_peak_power,
+                                        minute)
+    table_dict.add_table(minute, current_table)
+
+
+def safe_waiting_list_per_minute(simulation_day, simulation_data, minute):
+    waiting_list = copy.deepcopy(simulation_day.waiting_bevs_list.get_waiting_bevs_list())
+    simulation_data.add_waiting_list_to_dict(minute, waiting_list)
+
+
+def safe_available_solar_power_per_bev_per_minute(simulation_data, minute, solar_peak_power):
+    number_of_waiting_bevs = len(simulation_data.waiting_list_per_minute_dict[minute])
+    available_solar_power_per_minute = calculate_available_solar_power_per_bev(solar_peak_power, number_of_waiting_bevs,
+                                                                               minute)
+    simulation_data.add_available_solar_power_per_bev_to_dict(minute, available_solar_power_per_minute)
+
+
+def safe_charging_list_per_minute(simulation_day, simulation_data, minute):
+    charging_list = copy.deepcopy(simulation_day.charging_bevs_list.get_charging_bevs_list())
+    simulation_data.add_charging_list_to_dict(minute, charging_list)
+
+
+def safe_unused_solar_energy(available_solar_power, simulation_data):
+    simulation_data.add_unused_solar_energy(copy.deepcopy(available_solar_power))
 
 
 def get_fueled_solar_energy_per_bev(bev_data):
