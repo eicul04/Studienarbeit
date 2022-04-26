@@ -25,13 +25,13 @@ def calculate_charging_time(current_minute, charging_start):
     return current_minute - charging_start
 
 
-def calculate_number_of_virtual_charging_stations(available_solar_power, charging_power_pro_bev):
+def calculate_number_of_charging_stations(available_solar_power, charging_power_pro_bev):
     if available_solar_power <= charging_power_pro_bev:
         return 1
     if available_solar_power % charging_power_pro_bev == 0:
         return int(available_solar_power / charging_power_pro_bev)
     remaining_charging_capacity = available_solar_power % charging_power_pro_bev
-    # + 1 für BEV, das dann die Reste tankt
+    # + 1 weil sonst würden BEVs mit mehr als charging_power_pro_bev tanken
     return int((available_solar_power - remaining_charging_capacity) / charging_power_pro_bev) + 1
 
 
@@ -39,13 +39,13 @@ def get_charging_power_per_bev(available_solar_power, number_of_charging_bevs):
     return available_solar_power / number_of_charging_bevs
 
 
-def calculate_number_of_free_virtual_charging_stations(number_of_virtual_charging_stations, number_of_charging_bevs):
+def calculate_number_of_free_charging_stations(number_of_virtual_charging_stations, number_of_charging_bevs):
     return number_of_virtual_charging_stations - number_of_charging_bevs
 
 
 def calculate_number_of_new_bevs_charging(number_of_virtual_charging_stations, number_of_charging_bevs, minute,
                                           available_solar_power, simulation_day, simulation_data):
-    number_of_free_virtual_charging_stations = calculate_number_of_free_virtual_charging_stations(
+    number_of_free_virtual_charging_stations = calculate_number_of_free_charging_stations(
         number_of_virtual_charging_stations, number_of_charging_bevs)
     if simulation_day.waiting_bevs_list.get_number_of_waiting_bevs() == 0:
         safe_unused_solar_energy(available_solar_power, simulation_data)

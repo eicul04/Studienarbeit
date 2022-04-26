@@ -49,7 +49,8 @@ def get_charging_start_with_associated_bev_ids(simulation_day):
     return charging_starts_with_associated_bev_ids
 
 
-
+# TODO wenn bereits bev-rectangle gezeichnet und dann kommt anderes bev-rectangle dazu,
+#  dann wird die Höhe vom ersten bev-rectangle um die Hälfte verkürzt
 def add_rectangles_to_charging_power_figure_forecast(simulation_day):
     start_height = 0
     # {id: charging_end}
@@ -72,12 +73,6 @@ def add_rectangles_to_charging_power_figure_forecast(simulation_day):
 
             if len(end_of_rectangles_after_charging_start) != 0:
                 start_height += charging_energy
-                charging_end_of_first_bev_from_list = list(drawn_rectangles_to_check.values())[0]
-                id_first_bev_from_list = list(drawn_rectangles_to_check.keys())[0]
-                #if charging_start > charging_end_of_first_bev_from_list:
-                    #start_height = 0
-                    # print(drawn_rectangles_to_check, "Drawn rectangles to check")
-                    #drawn_rectangles_to_check.pop(id_first_bev_from_list)
             else:
                 start_height = 0
 

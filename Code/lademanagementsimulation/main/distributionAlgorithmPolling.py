@@ -4,7 +4,7 @@ from simulateDay import simulate_day
 from simulationData import safe_charging_list_per_minute
 from simulationService import calculate_charging_time, \
     calculate_number_of_new_bevs_charging, calculate_overflow_of_bevs_charging, \
-    calculate_number_of_virtual_charging_stations, get_charging_power_per_bev, update_fueled_solar_energy, \
+    calculate_number_of_charging_stations, get_charging_power_per_bev, update_fueled_solar_energy, \
     update_charging_time
 
 import numpy as np
@@ -71,7 +71,7 @@ def update_charging_place_occupancy(available_solar_power, minute, charging_powe
 
 
 def get_number_of_virtual_charging_stations(available_solar_power, charging_power_pro_bev):
-    return calculate_number_of_virtual_charging_stations(available_solar_power, charging_power_pro_bev)
+    return calculate_number_of_charging_stations(available_solar_power, charging_power_pro_bev)
 
 
 def get_number_of_charging_bevs(simulation_day):
