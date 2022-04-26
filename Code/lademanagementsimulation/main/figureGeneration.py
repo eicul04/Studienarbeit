@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import pandas as pd
 import plotly.express as px
 import numpy as np
@@ -47,25 +49,41 @@ def get_charging_start_with_associated_bev_ids(simulation_day):
     return charging_starts_with_associated_bev_ids
 
 
-# TODO ID auf rectangle schreiben
+
 def add_rectangles_to_charging_power_figure_forecast(simulation_day):
+    start_height = 0
+    # {id: charging_end}
+    drawn_rectangles_to_check = {}
     charging_starts_with_associated_bev_ids = get_charging_start_with_associated_bev_ids(simulation_day)
-    print(charging_starts_with_associated_bev_ids)
-    for charging_start in charging_starts_with_associated_bev_ids.keys():
+    charging_starts_with_associated_bev_ids_ordered_by_start = OrderedDict(sorted(charging_starts_with_associated_bev_ids.items()))
+    for charging_start in charging_starts_with_associated_bev_ids_ordered_by_start.keys():
         ids_bev_with_same_charging_start = list(charging_starts_with_associated_bev_ids[charging_start])
-        start_height = 0
         for id_bev in ids_bev_with_same_charging_start:
-            print(ids_bev_with_same_charging_start, "IDs BEV with same charging start")
-            charging_end = calculate_charging_end(charging_start, simulation_day.bevs_dict.get_charging_time(id_bev))
-            # TODO replace Mock
+            charging_tuple = simulation_day.bevs_dict.get_charging_data(id_bev)
+            charging_start = charging_tuple[0][0]
+            charging_time = charging_tuple[0][1]
+            charging_end = calculate_charging_end(charging_start, charging_time)
+            # TODO replace
             charging_energy = 1
+            # charging_energy = charging_tuple[0][2]
+
+            end_of_rectangles_after_charging_start = \
+                dict((k, v) for k, v in drawn_rectangles_to_check.items() if v >= charging_start)
+
+            if len(end_of_rectangles_after_charging_start) != 0:
+                start_height += charging_energy
+                charging_end_of_first_bev_from_list = list(drawn_rectangles_to_check.values())[0]
+                id_first_bev_from_list = list(drawn_rectangles_to_check.keys())[0]
+                #if charging_start > charging_end_of_first_bev_from_list:
+                    #start_height = 0
+                    # print(drawn_rectangles_to_check, "Drawn rectangles to check")
+                    #drawn_rectangles_to_check.pop(id_first_bev_from_list)
+            else:
+                start_height = 0
+
             draw_rectangle(charging_start, start_height, charging_end, start_height + charging_energy)
-            start_height += charging_energy
-        print(start_height, "Start Höhe")
-
-
-def stack_rectangles_with_same_charging_start():
-    print("stacked")
+            add_id_on_rectangle(charging_start, start_height, id_bev)
+            drawn_rectangles_to_check[id_bev] = charging_end
 
 
 def draw_rectangle(x0, y0, x1, y1):
@@ -75,14 +93,27 @@ def draw_rectangle(x0, y0, x1, y1):
                                        )
 
 
+def add_id_on_rectangle(x0, y0, id_bev):
+    # Adding a trace with a fill, setting opacity to 0
+    ladestrom_bev_fig.add_trace(
+        go.Scatter(
+            x=[x0 + 2],
+            y=[y0 + 0.5],
+            text='{}'.format(id_bev),
+            mode='text',
+        )
+    )
+
+
 def generate_charging_power_figure():
     global ladestrom_bev_fig
 
     # Set axes properties
     ladestrom_bev_fig.update_xaxes(range=[480, 960], showgrid=True)
-    ladestrom_bev_fig.update_yaxes(range=[0, 10])
+    ladestrom_bev_fig.update_yaxes(range=[0, 60])
 
     ladestrom_bev_fig.update_shapes(dict(xref='x', yref='y'))
+
     ladestrom_bev_fig.update_layout(yaxis={'title': 'Energie in kWh'},
                                     xaxis={'title': 'Minuten'},
                                     title={'text': 'Ladeenergie pro Ladezeitraum eines BEVs',

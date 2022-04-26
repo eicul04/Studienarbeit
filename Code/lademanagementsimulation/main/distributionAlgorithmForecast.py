@@ -90,8 +90,10 @@ def get_charging_end(minute_when_max_available_solar_power_per_bev, maximum_char
     return int(minute_when_max_available_solar_power_per_bev + (maximum_charging_time / 2))
 
 
+# TODO Abfrage, das maximal so viele in charging intervall wie available_charging_stations
 def set_charging_data(id_bev, simulation_day, charging_start, charging_end):
-    simulation_day.bevs_dict.add_charging_data_for_forecast(id_bev, charging_start, charging_end)
+    charging_time = charging_end - charging_start
+    simulation_day.bevs_dict.add_charging_data_for_forecast(id_bev, charging_start, charging_time)
 
 
 def reduce_available_solar_power_because_of_charging_slot(charging_power_per_bev, max_minute, simulation_data):
