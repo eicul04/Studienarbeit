@@ -83,11 +83,15 @@ class BevDictionary:
 
     def get_charging_time(self, id_bev):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
-        return latest_charging_tuple[1]
+        if latest_charging_tuple is not None:
+            return latest_charging_tuple[1]
+        return None
 
     def get_charging_start(self, id_bev):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
-        return latest_charging_tuple[0]
+        if latest_charging_tuple is not None:
+            return latest_charging_tuple[0]
+        return None
 
     def get_charging_data(self, id_bev):
         bev_data = self.bevs_dict[id_bev]
@@ -98,8 +102,10 @@ class BevDictionary:
 
     def get_latest_charging_tuple(self, id_bev):
         bev_charging_data = self.get_charging_data(id_bev)
-        latest_charging = len(bev_charging_data) - 1
-        return bev_charging_data[latest_charging]
+        if len(bev_charging_data) > 0:
+            latest_charging = len(bev_charging_data) - 1
+            return bev_charging_data[latest_charging]
+        return None
 
     def set_charging_time(self, id_bev, charging_time):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
