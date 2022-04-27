@@ -26,6 +26,8 @@ def calculate_charging_time(current_minute, charging_start):
 
 
 def calculate_number_of_charging_stations(available_solar_power, charging_power_pro_bev):
+    if available_solar_power <= 0:
+        return 0
     if available_solar_power <= charging_power_pro_bev:
         return 1
     if available_solar_power % charging_power_pro_bev == 0:
@@ -36,7 +38,9 @@ def calculate_number_of_charging_stations(available_solar_power, charging_power_
 
 
 def get_charging_power_per_bev(available_solar_power, number_of_charging_bevs):
-    return available_solar_power / number_of_charging_bevs
+    if number_of_charging_bevs != 0:
+        return available_solar_power / number_of_charging_bevs
+    return 0
 
 
 def calculate_number_of_free_charging_stations(number_of_virtual_charging_stations, number_of_charging_bevs):
