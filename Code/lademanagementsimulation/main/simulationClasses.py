@@ -28,7 +28,7 @@ class BevDictionary:
         id_bevs = list(range(self.number_bevs_per_day))
         self.bevs_dict = {x: [(self.generate_parking_start(self.number_bevs_per_day),
                                self.generate_random_parking_time()),
-                              ParkingState.NON_PARKING.value, []] for x in id_bevs}
+                              ParkingState.NON_PARKING.value, [], []] for x in id_bevs}
 
     def generate_parking_start(self, number_bevs_per_day):
         parking_start_times = [[x] * y for x, y in
@@ -80,6 +80,17 @@ class BevDictionary:
     def add_charging_data_for_forecast(self, id_bev, charging_start, charging_end):
         bev_charging_data = self.bevs_dict[id_bev][2]
         bev_charging_data.append((charging_start, charging_end, 0))
+
+    def add_fair_share_solar_energy(self, id_bev, fair_share_charging_energy):
+        bev_charging_data = self.bevs_dict[id_bev][3]
+        bev_charging_data.append(fair_share_charging_energy)
+
+    def get_charging_energy_data(self, id_bev):
+        return self.bevs_dict[id_bev][3]
+
+    def add_forecast_solar_energy(self, id_bev, forecast_charging_energy):
+        bev_charging_data = self.bevs_dict[id_bev][3]
+        bev_charging_data.append(forecast_charging_energy)
 
     def get_charging_time(self, id_bev):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)

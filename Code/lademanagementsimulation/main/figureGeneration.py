@@ -64,8 +64,8 @@ def add_rectangles_to_charging_power_figure_forecast(simulation_day):
             charging_start = charging_tuple[0][0]
             charging_time = charging_tuple[0][1]
             charging_end = calculate_charging_end(charging_start, charging_time)
-            # TODO replace
-            charging_energy = 1
+            # TODO replace grade noch fair_share_charging_energy
+            charging_energy = simulation_day.bevs_dict.get_charging_energy_data(id_bev)[0]
             # charging_energy = charging_tuple[0][2]
 
             end_of_rectangles_after_charging_start = \
