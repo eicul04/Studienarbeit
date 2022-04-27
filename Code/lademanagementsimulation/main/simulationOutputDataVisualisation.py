@@ -14,7 +14,7 @@ def print_algorithm_result(bev_data, simulation_data, anzahl_bevs_pro_tag):
         total_number_of_fueled_solar_energy, total_number_of_unused_solar_energy))
 
 
-def create_tabular_overview_per_minute_slider(table_dict):
-    slider = IntSlider(value=480, min=480, max=960, step=1, description='Minute: ')
+def create_tabular_overview_per_minute_slider(table_dict, minute_interval):
+    slider = IntSlider(value=480, min=480, max=960, step=minute_interval, description='Minute: ')
     # minute = slider.value
     interact(table_dict.show_table, minute=slider)
