@@ -66,11 +66,11 @@ def set_initial_charging_times(simulation_day, maximum_charging_time, charging_p
                                fair_share):
     minute_when_max_available_solar_power_per_bev = get_minute_when_max_available_solar_power_per_bev(
         available_solar_power_per_bev_in_parking_interval_dict)
-    # Wie lange muss BEV um Maximum herum tanken, um fairen Anteil zu erhalten?
-    get_charging_interval(id_bev, charging_power_per_bev, solar_peak_power, simulation_day, minute_interval, fair_share)
-    charging_start = get_charging_start(minute_when_max_available_solar_power_per_bev, maximum_charging_time)
-    charging_end = get_charging_end(minute_when_max_available_solar_power_per_bev, maximum_charging_time)
-    set_charging_data(id_bev, simulation_day, charging_start, charging_end)
+    charging_interval = get_charging_interval(id_bev, charging_power_per_bev, solar_peak_power, simulation_day, minute_interval, fair_share)
+    # TODO delete 1. Ansatz um Maximum rumtanken?
+    # charging_start = get_charging_start(minute_when_max_available_solar_power_per_bev, maximum_charging_time)
+    # charging_end = get_charging_end(minute_when_max_available_solar_power_per_bev, maximum_charging_time)
+    set_charging_data(id_bev, simulation_day, charging_interval[0], charging_interval[1])
 
 
 def get_parking_start(simulation_day, id_bev):
@@ -124,30 +124,30 @@ def set_charging_data(id_bev, simulation_day, charging_start, charging_end):
     simulation_day.bevs_dict.add_charging_data_for_forecast(id_bev, charging_start, charging_time)
 
 
-def check_if_charging_interval_full(available_solar_power, charging_power_pro_bev, number_of_planned_bevs):
-    number_of_charging_stations = calculate_number_of_charging_stations(available_solar_power, charging_power_pro_bev)
-    if number_of_planned_bevs >= number_of_charging_stations:
-        return True
-    return False
-
-
-# TODO überprüfe fair share in charging interval -> wenn größer dann charging interval kürzen
-# TODO Methode fertig schreiben :)
-# TODO überprüfen ob charging interval leer -> Was machen wenn kein charging_interval verfügbar
 def get_charging_interval(id_bev, charging_power_per_bev,
                           solar_peak_power, simulation_day, minute_interval, fair_share):
     forecast_dict = get_forecast_dict(id_bev, charging_power_per_bev, solar_peak_power, simulation_day, minute_interval)
     possible_charging_intervals_list = get_possible_charging_intervals_list(forecast_dict)
-    charging_energies_dict = get_charging_energies_dict(forecast_dict, possible_charging_intervals_list)
-    highest_charging_energy = get_highest_charging_energy(charging_energies_dict)
-    charging_interval_as_list = get_charging_interval_with_highest_charging_energy(charging_energies_dict, possible_charging_intervals_list)
-    if highest_charging_energy > fair_share:
-        # kürze charging-Intervall
-    else:
-        charging_start = charging_interval_as_list[0]
-        charging_end = charging_interval_as_list[-1]
-        charging_interval = (charging_start, charging_end)
-        return charging_interval
+    if any(possible_charging_intervals_list):
+        charging_energies_dict = get_charging_energies_dict(forecast_dict, possible_charging_intervals_list)
+        highest_charging_energy = get_highest_charging_energy(charging_energies_dict)
+        charging_interval_as_list = get_charging_interval_with_highest_charging_energy(charging_energies_dict,
+                                                                                       possible_charging_intervals_list)
+        if highest_charging_energy > fair_share:
+            shortened_charging_interval_as_list = shorten_charging_interval_till_fit_fair_share(
+                charging_interval_as_list, forecast_dict, fair_share)
+            return create_charging_interval(shortened_charging_interval_as_list)
+        else:
+            return create_charging_interval(charging_interval_as_list)
+    print("No charging slot available")
+    # TODO Was machen wenn kein charging slot frei?
+
+
+def create_charging_interval(charging_interval_as_list):
+    charging_start = charging_interval_as_list[0]
+    charging_end = charging_interval_as_list[-1]
+    charging_interval = (charging_start, charging_end)
+    return charging_interval
 
 
 # TODO alle Parkingintervalle auf Ende beschränken? also 16 Uhr?
@@ -205,6 +205,17 @@ def get_charging_energies_dict(forecast_dict, possible_charging_intervals_list):
         charging_energies_dict[index] = charging_energy_in_interval
         index += 1
     return charging_energies_dict
+
+
+def shorten_charging_interval_till_fit_fair_share(charging_interval_as_list, forecast_dict, fair_share):
+    forecast_in_charging_interval_dict = OrderedDict(sorted(get_forecast_in_possible_charging_interval_dict(
+        forecast_dict, charging_interval_as_list).items()))
+    charging_energy_in_interval = 0
+    for minute in forecast_in_charging_interval_dict.keys():
+        charging_energy_in_interval += forecast_in_charging_interval_dict[minute][1]
+        if charging_energy_in_interval > fair_share:
+            shortened_interval = [x for x in charging_interval_as_list if x < minute]
+            return shortened_interval
 
 
 def get_charging_interval_with_highest_charging_energy(charging_energies_dict, possible_charging_intervals_list):
