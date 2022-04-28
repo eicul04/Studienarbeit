@@ -4,6 +4,8 @@ from collections import OrderedDict
 import numpy as np
 
 from data import get_available_solar_power
+from forecastCalculation import get_parking_start, get_parking_end, get_available_solar_power_in_parking_interval_dict, \
+    calculate_fair_share_charging_energy
 from simulateDay import simulate_day
 from simulationClasses import ParkingState
 from simulationData import safe_charging_list_per_minute, safe_bev_dict_per_minute_forecast
@@ -82,7 +84,7 @@ def determine_charging_distribution(charging_power_per_bev, maximum_charging_tim
         available_solar_power_per_bev_in_parking_interval_dict = OrderedDict(sorted(
             get_available_solar_power_in_parking_interval_dict(
                 simulation_day, id_bev, simulation_data, minute_interval).items()))
-        fair_share = calculate_fair_share(available_solar_power_per_bev_in_parking_interval_dict, minute_interval)
+        fair_share = calculate_fair_share_charging_energy(available_solar_power_per_bev_in_parking_interval_dict, minute_interval)
         #print(fair_share, "Fairer Anteil für BEV")
         forecast_dict = get_forecast_dict(id_bev, charging_power_per_bev, solar_peak_power, simulation_day,
                                           minute_interval)
@@ -139,41 +141,6 @@ def get_charging_energy_data(highest_charging_energy, fair_share, forecast_dict,
         return fair_charging_energy
     else:
         return highest_charging_energy
-
-
-def get_parking_start(simulation_day, id_bev):
-    return in_minutes(simulation_day.bevs_dict.get_parking_start(id_bev))
-
-
-def get_parking_time(simulation_day, id_bev):
-    return in_minutes(simulation_day.bevs_dict.get_parking_time(id_bev))
-
-
-def get_parking_end(simulation_day, id_bev):
-    return calculate_parking_end(get_parking_start(simulation_day, id_bev),
-                                 get_parking_time(simulation_day, id_bev))
-
-
-def get_available_solar_power_in_parking_interval_dict(simulation_day, id_bev, simulation_data, minute_interval):
-    parking_start = adapt_parking_start_to_simulation_start(get_parking_start(simulation_day, id_bev))
-    parking_end = adapt_parking_end_to_simulation_end(get_parking_end(simulation_day, id_bev))
-    parking_interval_in_minutes_as_list = get_parking_interval_in_minutes_as_list(parking_start, parking_end,
-                                                                                  minute_interval)
-    return {key: simulation_data.available_solar_power_per_bev_per_minute_dict[key] for key in
-            simulation_data.available_solar_power_per_bev_per_minute_dict.keys() &
-            parking_interval_in_minutes_as_list}
-
-
-def adapt_parking_start_to_simulation_start(parking_start):
-    if parking_start < 480:
-        return 480
-    return parking_start
-
-
-def adapt_parking_end_to_simulation_end(parking_end):
-    if parking_end > 960:
-        return 960
-    return parking_end
 
 
 def get_parking_interval_in_minutes_as_list(parking_start, parking_end, minute_interval):
@@ -317,13 +284,6 @@ def get_highest_charging_energy(charging_energies_dict):
 def get_forecast_in_possible_charging_interval_dict(forecast_dict, possible_charging_interval):
     return {key: forecast_dict[key] for key in
             forecast_dict.keys() & possible_charging_interval}
-
-
-def calculate_fair_share(available_solar_power_per_bev_in_parking_interval_dict, minute_interval):
-    fair_share = 0
-    for minute in available_solar_power_per_bev_in_parking_interval_dict.keys():
-        fair_share += available_solar_power_per_bev_in_parking_interval_dict[minute] * (minute_interval / 60)
-    return fair_share
 
 
 def get_number_of_charging_stations(minute, charging_power_per_bev, solar_peak_power):

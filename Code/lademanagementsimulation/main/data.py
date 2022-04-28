@@ -77,7 +77,7 @@ def get_available_solar_power_dataframe_linear_interpolated(solar_peak_power, mi
 
 
 def get_available_solar_power(solar_peak_power, minute):
-    return calculation.get_available_solar_power_interpolated(solar_peak_power, minute)
+    return calculation.get_available_solar_power_quadratic_interpolated(solar_peak_power, minute)
 
 
 def get_available_solar_power_in_minute_interval_start(solar_peak_power, minute):
