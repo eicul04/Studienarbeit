@@ -38,8 +38,8 @@ class SimulationData:
     def get_already_charged_list_per_minute_dict(self):
         return self.already_charged_list_per_minute_dict
 
-    def add_unused_solar_energy(self, unused_solar_power):
-        self.unused_solar_energy += calculate_unused_solar_energy(unused_solar_power)
+    def add_unused_solar_energy(self, unused_solar_power, minute_interval):
+        self.unused_solar_energy += calculate_unused_solar_energy(unused_solar_power, minute_interval)
 
     def get_total_number_of_unused_solar_energy(self):
         return self.unused_solar_energy

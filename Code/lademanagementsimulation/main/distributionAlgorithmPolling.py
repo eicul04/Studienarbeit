@@ -18,7 +18,7 @@ class Algorithm(Enum):
 
 
 def start_simulation(solar_peak_power, max_charging_time, charging_power_pro_bev,
-                     simulation_day, bev_data, table_dict, simulation_data, algorithm):
+                     simulation_day, bev_data, table_dict, simulation_data, algorithm, minute_interval):
     algorithm_module = __import__(algorithm.value)
     day_in_minute_steps = list(np.around(np.arange(480, 960 + 1, 1), 1))
     for minute in day_in_minute_steps:
@@ -26,34 +26,34 @@ def start_simulation(solar_peak_power, max_charging_time, charging_power_pro_bev
         safe_bev_dict_per_minute(minute, simulation_day, bev_data, table_dict, solar_peak_power)
         update_charging_bevs(solar_peak_power, minute, max_charging_time,
                              charging_power_pro_bev, simulation_day, algorithm_module, bev_data,
-                             simulation_data)
+                             simulation_data, minute_interval)
         safe_charging_list_per_minute(simulation_day, simulation_data, minute)
 
 
 def update_charging_bevs(solar_peak_power, minute, max_charging_time,
                          charging_power_pro_bev, simulation_day, algorithm_module, bev_data,
-                         simulation_data):
+                         simulation_data, minute_interval):
     update_charging_time(minute, simulation_day)
     update_because_charging_time_over(minute, max_charging_time, simulation_day, algorithm_module)
     update_because_change_in_number_of_charging_stations(solar_peak_power, minute,
                                                          charging_power_pro_bev, simulation_day,
                                                          bev_data,
-                                                         simulation_data)
+                                                         simulation_data, minute_interval)
 
 
 def update_because_change_in_number_of_charging_stations(solar_peak_power, minute,
                                                          charging_power_pro_bev, simulation_day,
                                                          bev_data,
-                                                         simulation_data):
+                                                         simulation_data, minute_interval):
     if dataChecks.check_availability_solar_power(solar_peak_power, minute):
         available_solar_power = data.get_available_solar_power(solar_peak_power, minute)
         update_charging_place_occupancy(available_solar_power, minute, charging_power_pro_bev, simulation_day,
-                                        bev_data, simulation_data)
-        update_fueled_solar_energy(available_solar_power, simulation_day)
+                                        bev_data, simulation_data, minute_interval)
+        update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval)
 
 
 def update_charging_place_occupancy(available_solar_power, minute, charging_power_pro_bev, simulation_day,
-                                    bev_data, simulation_data):
+                                    bev_data, simulation_data, minute_interval):
     number_of_virtual_charging_stations = get_number_of_virtual_charging_stations(available_solar_power,
                                                                                   charging_power_pro_bev)
     number_of_charging_bevs = get_number_of_charging_bevs(simulation_day)
@@ -63,7 +63,7 @@ def update_charging_place_occupancy(available_solar_power, minute, charging_powe
         add_charging_bevs_because_of_free_places(calculate_number_of_new_bevs_charging(number_of_virtual_charging_stations,
                                                                                        number_of_charging_bevs, minute,
                                                                                        available_solar_power,
-                                                                                       simulation_day, simulation_data),
+                                                                                       simulation_day, simulation_data, minute_interval),
                                                  minute, simulation_day)
     elif number_of_available_charging_stations < 0:
         remove_charging_bevs_because_of_lack_of_places(calculate_overflow_of_bevs_charging(number_of_virtual_charging_stations,
