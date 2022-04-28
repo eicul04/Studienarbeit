@@ -208,10 +208,12 @@ class SimulationDay:
         self.bevs_dict = BevDictionary(number_bevs_per_day)
         self.bevs_to_remove = set()
 
-    def start_charging(self, id_bev, current_minute):
+    def start_charging(self, id_bev):
         self.charging_bevs_list.add_bev(id_bev)
         self.waiting_bevs_list.remove_bev(id_bev)
         self.bevs_dict.set_parking_state(id_bev, ParkingState.CHARGING)
+
+    def init_charging_data(self, id_bev, current_minute):
         self.bevs_dict.add_charging_data(id_bev, current_minute)
 
     def stop_charging(self, id_bev):

@@ -5,6 +5,7 @@ import numpy as np
 
 from data import get_available_solar_power
 from simulateDay import simulate_day
+from simulationClasses import ParkingState
 from simulationData import safe_charging_list_per_minute
 from simulationService import calculate_parking_end, calculate_number_of_charging_stations, calculate_charging_end, \
     get_charging_power_per_bev, update_charging_time, update_fueled_solar_energy
@@ -52,7 +53,7 @@ def update_because_charging_time_starts(current_minute, simulation_day):
     for id_bev in simulation_day.bevs_dict.get_bevs_dict():
         charging_start = simulation_day.bevs_dict.get_charging_start(id_bev)
         if current_minute == charging_start:
-            simulation_day.charging_bevs_list.add_bev(id_bev)
+            simulation_day.start_charging(id_bev)
 
 
 def update_because_charging_time_over(current_minute, simulation_day):

@@ -85,8 +85,8 @@ def get_number_of_available_charging_stations(number_of_virtual_charging_station
 def add_charging_bevs_because_of_free_places(number_of_new_bevs_charging, minute, simulation_day):
     number_of_new_bevs_charging_as_list = list(range(0, number_of_new_bevs_charging))
     for item in number_of_new_bevs_charging_as_list:
-        simulation_day.start_charging(simulation_day.waiting_bevs_list.get_first_waiting_bev_of_list(),
-                                      minute)
+        simulation_day.start_charging(simulation_day.waiting_bevs_list.get_first_waiting_bev_of_list())
+        simulation_day.init_charging_data(simulation_day.waiting_bevs_list.get_first_waiting_bev_of_list(), minute)
 
 
 def remove_charging_bevs_because_of_lack_of_places(overflow_of_bevs_charging, simulation_day, bev_data):
