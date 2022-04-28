@@ -38,11 +38,24 @@ def calculate_available_solar_power_per_bev(solar_peak_power, number_of_waiting_
 
 
 def get_available_solar_power_interpolated(solar_peak_power, minute):
-    time_original_in_minutes = transform_to_minutes(data.get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'])
+    time_original_in_minutes = transform_to_minutes(
+        data.get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'])
     available_solar_power_original = data.get_available_solar_power_dataframe(solar_peak_power)[
         'Verfügbare Solarleistung']
 
-    available_solar_power_interpolated = quadratic_interpolation_for_timestamp(time_original_in_minutes, available_solar_power_original, minute)
+    available_solar_power_interpolated = quadratic_interpolation_for_timestamp(time_original_in_minutes,
+                                                                               available_solar_power_original, minute)
+    return available_solar_power_interpolated
+
+
+def get_available_solar_power_linear_interpolated(solar_peak_power, minute_interval, minute):
+    time_original_in_minutes = transform_to_minutes(
+        data.get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'])
+    available_solar_power_original = data.get_available_solar_power_dataframe(solar_peak_power)[
+        'Verfügbare Solarleistung']
+
+    available_solar_power_interpolated = linear_interpolation_for_timestamp(time_original_in_minutes,
+                                                                            available_solar_power_original, minute)
     return available_solar_power_interpolated
 
 
@@ -50,3 +63,9 @@ def quadratic_interpolation_for_timestamp(x_values, y_values, timestamp):
     quadratic_interpolation = sp.interpolate.interp1d(x_values, y_values, kind='quadratic',
                                                       fill_value="extrapolate")
     return np.round(quadratic_interpolation(timestamp), 2)
+
+
+def linear_interpolation_for_timestamp(x_values, y_values, timestamp):
+    linear_interpolation = sp.interpolate.interp1d(x_values, y_values, kind='linear',
+                                                   fill_value="extrapolate")
+    return np.round(linear_interpolation(timestamp), 2)

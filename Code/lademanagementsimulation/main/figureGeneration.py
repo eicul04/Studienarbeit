@@ -159,9 +159,9 @@ def add_id_on_rectangle(x0, y0, id_bev):
     )
 
 
-def create_charging_power_figure(simulation_day, solar_peak_power, bev_data):
+def create_charging_power_figure(simulation_day, solar_peak_power, bev_data, minute_interval):
     # add_rectangles_to_charging_power_figure_forecast(simulation_day, solar_peak_power)
-    df_available_solar_power = data.get_available_solar_power_dataframe_interpolated(solar_peak_power)
+    df_available_solar_power = data.get_available_solar_power_dataframe_linear_interpolated(solar_peak_power, minute_interval)
     charging_power_per_bev_per_minute_dict = bev_data.charging_power_per_bev_per_minute_dict
     # number_of_stages = get_number_of_changes_of_charging_power(charging_power_per_bev_per_minute_dict)
     rectangle_points = get_points_of_rectangle_with_stages(bev_data)

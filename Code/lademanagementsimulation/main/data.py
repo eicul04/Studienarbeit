@@ -57,9 +57,31 @@ def get_available_solar_power_dataframe_interpolated(solar_peak_power):
         columns=["Minuten", "Verfügbare Solarleistung"])
 
 
+def get_available_solar_power_dataframe_linear_interpolated(solar_peak_power, minute_interval):
+    # Get data
+    time_original_in_minutes = transform_to_minutes(get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'])
+    available_solar_power_original = get_available_solar_power_dataframe(solar_peak_power)[
+        'Verfügbare Solarleistung']
+
+    time_in_minute_interval_steps = np.arange(start=time_original_in_minutes.min(), stop=time_original_in_minutes.max() + 1,
+                                     step=minute_interval)
+
+    # Linear Interpolation
+    linear_interpolation = sp.interpolate.interp1d(time_original_in_minutes, available_solar_power_original,
+                                                      kind='linear', fill_value="extrapolate")
+    available_solar_power_interpolated = linear_interpolation(time_in_minute_interval_steps)
+
+    return pd.DataFrame(
+        list(zip(time_in_minute_interval_steps, available_solar_power_interpolated)),
+        columns=["Minuten", "Verfügbare Solarleistung"])
+
+
 def get_available_solar_power(solar_peak_power, minute):
     return calculation.get_available_solar_power_interpolated(solar_peak_power, minute)
 
+
+def get_available_solar_power_in_minute_interval_start(solar_peak_power, minute):
+    return calculation.get_available_solar_power_linear_interpolated(solar_peak_power, minute)
 
 def get_available_solar_energy(solar_peak_power, minute):
     available_solar_power = get_available_solar_power(solar_peak_power, minute)
