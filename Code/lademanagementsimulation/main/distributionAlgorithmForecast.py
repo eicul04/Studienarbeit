@@ -32,15 +32,20 @@ def start_algorithm(simulation_data, simulation_day, maximum_charging_time, sola
     for minute in day_in_minute_interval_steps:
         init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
     determine_charging_distribution(charging_power_per_bev, maximum_charging_time, simulation_data, simulation_day,
-                                    solar_peak_power, minute_interval)
+                                    solar_peak_power, minute_interval, bev_data)
     # update charging_times bei Veränderungen zum ursprünglichen Plan (bevs_dict Parkzeiten)
     # update immer für wartende und noch nicht parkende autos
     for minute in day_in_minute_interval_steps:
         simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
+        # TODO wieder einkommentieren und Tabellenerzeugung (fig nach hinten anschieben)
         safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, solar_peak_power)
         update_charging_bevs(minute, simulation_day)
         available_solar_power = get_available_solar_power(solar_peak_power, minute)
-        update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval)
+        number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
+        if number_of_charging_bevs != 0:
+            charging_power_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
+            update_fueled_solar_energy(charging_power_per_bev, simulation_day, minute_interval)
+            bev_data.add_charging_power_for_minute(minute, charging_power_per_bev)
         safe_charging_list_per_minute(simulation_day, simulation_data, minute)
 
 
@@ -68,27 +73,27 @@ def update_because_charging_time_over(current_minute, simulation_day):
 
 
 def determine_charging_distribution(charging_power_per_bev, maximum_charging_time, simulation_data, simulation_day,
-                                    solar_peak_power, minute_interval):
+                                    solar_peak_power, minute_interval, bev_data):
     print("Start: BEVs_dict", simulation_day.bevs_dict.get_bevs_dict())
     for id_bev in simulation_day.bevs_dict.get_bevs_dict().keys():
-        print("Updated BEVs_dict", simulation_day.bevs_dict.get_bevs_dict())
-        print("\n")
-        print("für BEV mit ID", id_bev)
+        #print("Updated BEVs_dict", simulation_day.bevs_dict.get_bevs_dict())
+        #print("\n")
+        #print("für BEV mit ID", id_bev)
         available_solar_power_per_bev_in_parking_interval_dict = OrderedDict(sorted(
             get_available_solar_power_in_parking_interval_dict(
                 simulation_day, id_bev, simulation_data, minute_interval).items()))
         fair_share = calculate_fair_share(available_solar_power_per_bev_in_parking_interval_dict, minute_interval)
-        print(fair_share, "Fairer Anteil für BEV")
+        #print(fair_share, "Fairer Anteil für BEV")
         forecast_dict = get_forecast_dict(id_bev, charging_power_per_bev, solar_peak_power, simulation_day,
                                           minute_interval)
-        set_initial_charging_times(simulation_day, id_bev, fair_share, forecast_dict)
+        set_initial_charging_times(simulation_day, id_bev, fair_share, forecast_dict, bev_data)
 
 
 def init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data):
     simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
 
 
-def set_initial_charging_times(simulation_day, id_bev, fair_share, forecast_dict):
+def set_initial_charging_times(simulation_day, id_bev, fair_share, forecast_dict, bev_data):
     possible_charging_intervals_list = get_possible_charging_intervals_list(forecast_dict)
     if any(possible_charging_intervals_list):
         charging_energies_dict = get_charging_energies_dict(forecast_dict, possible_charging_intervals_list)
@@ -99,7 +104,6 @@ def set_initial_charging_times(simulation_day, id_bev, fair_share, forecast_dict
         charging_interval_as_list = shorten_charging_interval_if_more_than_fair_share(
             highest_charging_energy, charging_interval_with_highest_charging_energy_as_list,
             forecast_dict, fair_share)
-        print(charging_interval_as_list, "charging interval as list")
         charging_interval = create_charging_interval(charging_interval_as_list)
         charging_energy = get_charging_energy_data(highest_charging_energy, fair_share, forecast_dict,
                                                    charging_interval_as_list)
@@ -107,6 +111,7 @@ def set_initial_charging_times(simulation_day, id_bev, fair_share, forecast_dict
         set_charging_energy_data(simulation_day, id_bev, fair_share, charging_energy)
     else:
         print("No charging slot available")
+        bev_data.increase_number_of_bev_with_no_charging_slot_in_forecast()
         # TODO Was machen wenn kein charging slot frei?
 
 
@@ -248,7 +253,7 @@ def get_available_solar_energy_per_minute_for_bev(charging_power_pro_bev, solar_
 def get_possible_charging_intervals_list(forecast_dict):
     possible_charging_intervals_list = []
     possible_charging_interval_list = []
-    print(forecast_dict, "Forecast-dict")
+    #print(forecast_dict, "Forecast-dict")
     for minute in forecast_dict.keys():
         if forecast_dict[minute][0] >= 1:
             if check_if_in_simulation_time_interval(minute):
@@ -257,7 +262,7 @@ def get_possible_charging_intervals_list(forecast_dict):
             possible_charging_intervals_list.append(possible_charging_interval_list)
             possible_charging_interval_list = []
     possible_charging_intervals_list.append(possible_charging_interval_list)
-    print(possible_charging_intervals_list, "Possible charging intervals list")
+    #print(possible_charging_intervals_list, "Possible charging intervals list")
     return possible_charging_intervals_list
 
 
@@ -293,15 +298,15 @@ def shorten_charging_interval_till_fit_fair_share(charging_interval_as_list, for
         charging_energy_in_interval += forecast_in_charging_interval_dict[minute][1]
         if charging_energy_in_interval > fair_share:
             shortened_interval = [x for x in charging_interval_as_list if x < minute]
-            if len(shortened_interval) == 0:
-                shortened_interval.append(charging_interval_as_list[0])
+            if len(shortened_interval) == 1:
+                shortened_interval.append(charging_interval_as_list[1])
             return shortened_interval
 
 
 def get_charging_interval_with_highest_charging_energy(charging_energies_dict, possible_charging_intervals_list):
-    print(charging_energies_dict, "Charging Energies dict")
+    #print(charging_energies_dict, "Charging Energies dict")
     index_max_charging_energy = max(charging_energies_dict, key=charging_energies_dict.get)
-    print(index_max_charging_energy, "index_max_charging_energy")
+    #print(index_max_charging_energy, "index_max_charging_energy")
     return possible_charging_intervals_list[index_max_charging_energy]
 
 
@@ -316,7 +321,6 @@ def get_forecast_in_possible_charging_interval_dict(forecast_dict, possible_char
 
 def calculate_fair_share(available_solar_power_per_bev_in_parking_interval_dict, minute_interval):
     fair_share = 0
-    print(available_solar_power_per_bev_in_parking_interval_dict, 'available_solar_power_per_bev_in_parking_interval_dict')
     for minute in available_solar_power_per_bev_in_parking_interval_dict.keys():
         fair_share += available_solar_power_per_bev_in_parking_interval_dict[minute] * (minute_interval / 60)
     return fair_share

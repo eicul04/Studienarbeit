@@ -14,6 +14,7 @@ class SimulationData:
         self.waiting_list_per_minute_dict = {}
         self.charging_list_per_minute_dict = {}
         self.already_charged_list_per_minute_dict = {}
+        # available_solar_power_per_bev = available_solar_power / waiting_bevs (bei Durchlauf ohne charging BEVs)
         self.available_solar_power_per_bev_per_minute_dict = {}
         self.unused_solar_energy = 0
 
@@ -49,15 +50,24 @@ class BevData:
 
     def __init__(self):
         self.bev_data_per_minute_dict = {}
+        # Charging power für ein BEV
+        self.charging_power_per_minute_dict = {}
         self.total_number_of_charged_bevs = 0
         self.sum_of_fueled_solar_energy = 0
         self.interrupted_charging_processes = 0
+        self.bev_with_no_charging_slot_in_forecast = 0
 
     def add_bev_data_per_minute_dict(self, minute, current_bevs_dict):
         self.bev_data_per_minute_dict[minute] = current_bevs_dict
 
     def get_bev_data_per_minute_dict(self, minute):
         return self.bev_data_per_minute_dict[minute].get_bevs_dict()
+
+    def add_charging_power_for_minute(self, minute, charging_power_for_bev):
+        self.charging_power_per_minute_dict[minute] = charging_power_for_bev
+
+    def get_charging_power_for_minute(self, minute):
+        return self.charging_power_per_minute_dict[minute]
 
     def get_bev_dict_for_last_minute(self):
         return list(self.bev_data_per_minute_dict.values())[-1].get_bevs_dict()
@@ -67,6 +77,12 @@ class BevData:
 
     def get_total_number_of_fueled_solar_energy(self):
         return round(self.sum_of_fueled_solar_energy, 2)
+
+    def get_number_of_bev_with_no_charging_slot_in_forecast(self):
+        return self.bev_with_no_charging_slot_in_forecast
+
+    def increase_number_of_bev_with_no_charging_slot_in_forecast(self):
+        self.bev_with_no_charging_slot_in_forecast += 1
 
     def increase_number_of_interrupted_charging_processes(self):
         self.interrupted_charging_processes += 1

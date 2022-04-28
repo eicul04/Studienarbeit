@@ -29,10 +29,18 @@ def get_available_solar_power_dataframe(solar_peak_power):
     return df_available_solar_power
 
 
+def get_available_solar_energy_dataframe_interpolated(solar_peak_power):
+    df_available_solar_power = get_available_solar_power_dataframe_interpolated(solar_peak_power)
+    df_available_solar_power = df_available_solar_power.reset_index()  # make sure indexes pair with number of rows
+    for index, row in df_available_solar_power.iterrows():
+        df_available_solar_power.at[index, 'Verfügbare Solarleistung'] = row['Verfügbare Solarleistung'] * 1/60
+    df_available_solar_power.rename(columns={"Verfügbare Solarleistung": "Verfügbare Solarenergie"}, inplace=True)
+    return df_available_solar_power
+
+
 def get_available_solar_power_dataframe_interpolated(solar_peak_power):
     # Get data
-    time_original = transform_to_minutes(get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'])
-    time_original_in_minutes = df_in_minutes(time_original)
+    time_original_in_minutes = transform_to_minutes(get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'])
     available_solar_power_original = get_available_solar_power_dataframe(solar_peak_power)[
         'Verfügbare Solarleistung']
 
@@ -51,6 +59,11 @@ def get_available_solar_power_dataframe_interpolated(solar_peak_power):
 
 def get_available_solar_power(solar_peak_power, minute):
     return calculation.get_available_solar_power_interpolated(solar_peak_power, minute)
+
+
+def get_available_solar_energy(solar_peak_power, minute):
+    available_solar_power = get_available_solar_power(solar_peak_power, minute)
+    return available_solar_power * (1/60)
 
 
 def get_probability_arrival_time_bevs():
