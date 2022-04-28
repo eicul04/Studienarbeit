@@ -7,7 +7,7 @@ from data import get_available_solar_power
 from simulateDay import simulate_day
 from simulationData import safe_charging_list_per_minute
 from simulationService import calculate_parking_end, calculate_number_of_charging_stations, calculate_charging_end, \
-    get_charging_power_per_bev, update_charging_time
+    get_charging_power_per_bev, update_charging_time, update_fueled_solar_energy
 
 # für ankommendes BEV Prognose berechnen
 # für alle anderen BEVs (außer für aufgeladene BEVs) Prognose anpassen
@@ -32,12 +32,13 @@ def start_algorithm(simulation_data, simulation_day, maximum_charging_time, sola
         init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
     determine_charging_distribution(charging_power_per_bev, maximum_charging_time, simulation_data, simulation_day,
                                     solar_peak_power, minute_interval)
-    # TODO hier geht dann der Algo richtig los, nachdem die charging List initialisiert wurde
     # update charging_times bei Veränderungen zum ursprünglichen Plan (bevs_dict Parkzeiten)
     # update immer für wartende und noch nicht parkende autos
     for minute in day_in_minute_interval_steps:
         simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
         update_charging_bevs(minute, simulation_day)
+        available_solar_power = get_available_solar_power(solar_peak_power, minute)
+        update_fueled_solar_energy(available_solar_power, simulation_day)
         safe_charging_list_per_minute(simulation_day, simulation_data, minute)
 
 
@@ -85,7 +86,6 @@ def init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, tab
     simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
 
 
-# TODO update set_charging_data
 def set_initial_charging_times(simulation_day, id_bev, fair_share, forecast_dict):
     possible_charging_intervals_list = get_possible_charging_intervals_list(forecast_dict)
     if any(possible_charging_intervals_list):

@@ -76,7 +76,6 @@ class BevDictionary:
         bev_charging_data = self.bevs_dict[id_bev][2]
         bev_charging_data.append((current_minute, 0, 0))
 
-    # TODO replace 0 through charging_energy
     def add_charging_data_for_forecast(self, id_bev, charging_start, charging_end):
         bev_charging_data = self.bevs_dict[id_bev][2]
         bev_charging_data.append((charging_start, charging_end, 0))
@@ -124,7 +123,7 @@ class BevDictionary:
         latest_charging_tuple_as_list[1] = charging_time
         new_latest_charging_tuple = tuple(latest_charging_tuple_as_list)
         self.get_charging_data(id_bev).remove(latest_charging_tuple)
-        self.get_charging_data(id_bev).set_charging_tuple(new_latest_charging_tuple)
+        self.get_charging_data(id_bev).append(new_latest_charging_tuple)
 
     def set_fueled_solar_energy(self, id_bev, charging_power):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
@@ -134,7 +133,7 @@ class BevDictionary:
                                                                                    solar_energy_fueled_so_far), 3)
         new_latest_charging_tuple = tuple(latest_charging_tuple_as_list)
         self.get_charging_data(id_bev).remove(latest_charging_tuple)
-        self.get_charging_data(id_bev).set_charging_tuple(new_latest_charging_tuple)
+        self.get_charging_data(id_bev).append(new_latest_charging_tuple)
 
 
 class WaitingBevsList:
