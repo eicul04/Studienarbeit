@@ -51,7 +51,7 @@ class BevData:
     def __init__(self):
         self.bev_data_per_minute_dict = {}
         # Charging power für ein BEV
-        self.charging_power_per_minute_dict = {}
+        self.charging_power_per_bev_per_minute_dict = {}
         self.total_number_of_charged_bevs = 0
         self.sum_of_fueled_solar_energy = 0
         self.interrupted_charging_processes = 0
@@ -63,11 +63,15 @@ class BevData:
     def get_bev_data_per_minute_dict(self, minute):
         return self.bev_data_per_minute_dict[minute].get_bevs_dict()
 
-    def add_charging_power_for_minute(self, minute, charging_power_for_bev):
-        self.charging_power_per_minute_dict[minute] = charging_power_for_bev
+    def add_charging_power_per_bev_per_minute_dict(self, id_bev, minute, charging_power_for_bev_for_minute):
+        if id_bev in self.charging_power_per_bev_per_minute_dict:
+            self.charging_power_per_bev_per_minute_dict[id_bev][minute] = charging_power_for_bev_for_minute
+        else:
+            self.charging_power_per_bev_per_minute_dict[id_bev] = {}
+            self.charging_power_per_bev_per_minute_dict[id_bev][minute] = charging_power_for_bev_for_minute
 
-    def get_charging_power_for_minute(self, minute):
-        return self.charging_power_per_minute_dict[minute]
+    def get_charging_power_per_bev_per_minute_dict(self, id_bev, minute):
+        return self.charging_power_per_bev_per_minute_dict[id_bev][minute]
 
     def get_bev_dict_for_last_minute(self):
         return list(self.bev_data_per_minute_dict.values())[-1].get_bevs_dict()

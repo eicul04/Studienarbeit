@@ -37,15 +37,15 @@ def start_algorithm(simulation_data, simulation_day, maximum_charging_time, sola
     # update immer für wartende und noch nicht parkende autos
     for minute in day_in_minute_interval_steps:
         simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
-        # TODO wieder einkommentieren und Tabellenerzeugung (fig nach hinten anschieben)
+        # TODO Tabellenerzeugung (fig nach hinten anschieben)
         safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, solar_peak_power)
         update_charging_bevs(minute, simulation_day)
         available_solar_power = get_available_solar_power(solar_peak_power, minute)
-        number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
-        if number_of_charging_bevs != 0:
-            charging_power_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
-            update_fueled_solar_energy(charging_power_per_bev, simulation_day, minute_interval)
-            bev_data.add_charging_power_for_minute(minute, charging_power_per_bev)
+        update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval)
+        for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
+            number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
+            charging_power_real_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
+            bev_data.add_charging_power_per_bev_per_minute_dict(id_bev, minute, charging_power_real_per_bev)
         safe_charging_list_per_minute(simulation_day, simulation_data, minute)
 
 

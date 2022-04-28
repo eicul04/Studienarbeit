@@ -22,13 +22,21 @@ def create_available_solar_power_figure(solar_peak_power):
     return available_solar_power_fig
 
 
-def create_charging_power_figure(simulation_day, solar_peak_power):
+def create_charging_power_figure(simulation_day, solar_peak_power, bev_data):
     add_rectangles_to_charging_power_figure_forecast(simulation_day, solar_peak_power)
-    df_available_solar_energy = data.get_available_solar_energy_dataframe_interpolated(solar_peak_power)
-    generate_charging_power_figure(df_available_solar_energy)
+    df_available_solar_power = data.get_available_solar_power_dataframe_interpolated(solar_peak_power)
+    charging_power_per_bev_per_minute_dict = bev_data.charging_power_per_bev_per_minute_dict
+    # number_of_stages = get_number_of_changes_of_charging_power(charging_power_per_bev_per_minute_dict)
+    rectangle_points = get_points_of_rectangle_with_stages(bev_data)
+    generate_charging_power_figure(df_available_solar_power, charging_power_per_bev_per_minute_dict)
 
 
-# TODO bei prognose Algorithmus untere Funktion => schöner machen
+def get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_dict, id_bev):
+    charging_power_per_minute_dict = charging_power_per_bev_per_minute_dict[id_bev]
+    return pd.DataFrame.from_dict(charging_power_per_minute_dict, orient='index', columns=['Ladeleistung'])
+
+
+# TODO ACHTUNG bei Prognose Algorithmus untere Funktion verwenden
 def add_rectangles_to_charging_power_figure(simulation_day):
     for id_bev in simulation_day.bevs_dict.get_bevs_dict():
         for charging_tuple in simulation_day.bevs_dict.get_charging_data(id_bev):
@@ -80,7 +88,7 @@ def add_rectangles_to_charging_power_figure_forecast(simulation_day, solar_peak_
             rectangle_height = get_rectangle_height(available_solar_energy_for_start,
                                                     number_of_rectangles_already_on_stack)
 
-            update_rectangle_height(drawn_rectangles_to_check, rectangle_height)
+            # update_rectangle_height(drawn_rectangles_to_check, rectangle_height)
 
             # TODO update gezeichnete rectangles
 
@@ -109,17 +117,32 @@ def get_rectangle_height(available_solar_energy_for_start, number_of_rectangles_
     return rectangle_height
 
 
-def get_number_of_changes_of_charging_power():
-    
+def get_number_of_changes_of_charging_power(charging_power_per_minute_dict):
+    list_of_charging_power_values = []
+    for value in charging_power_per_minute_dict.values():
+        list_of_charging_power_values.append(value)
+    return (np.diff(list_of_charging_power_values) != 0).sum()
 
-def get_points_for_rectangle_with_stages():
-    number_of_stages = get_number_of_changes_of_charging_power()
-    rectangle_height_1 = bev_data.get_charging_power_for_minute(charging_start)
-    rectangle_height_ = bev_data.get_charging_power_for_minute(change_in_charging_power_1)...
 
+def get_values_if_change(charging_power_per_minute_dict):
+    ordered_charging_power_per_minute_dict = OrderedDict(charging_power_per_minute_dict)
+    for minute in charging_power_per_minute_dict.keys():
+        # next_key, key = ordered_charging_power_per_minute_dict._OrderedDict__map[minute]
+        return "nothing"
+
+
+def get_points_of_rectangle_with_stages(bev_data):
+    # rectangle_height_1 = bev_data.get_charging_power_for_minute(charging_start)
+    # rectangle_height_ = bev_data.get_charging_power_for_minute(change_in_charging_power_1)...
+    x = []
+    y = []
+    return "nothing"
+
+
+# TODO delete this method
 def update_rectangle_height(drawn_rectangles_to_check, rectangle_height):
     for id_bev in drawn_rectangles_to_check.keys():
-        drawn_rectangles_to_check[id_bev][1] = rectangle_height
+        drawn_rectangles_to_check[id_bev][0][1] = rectangle_height
 
 
 def draw_rectangle(x0, y0, x1, y1):
@@ -127,6 +150,7 @@ def draw_rectangle(x0, y0, x1, y1):
                                        x0=x0, y0=y0, x1=x1, y1=y1,
                                        line=dict(color="green"),
                                        )
+
 
 def draw_rectangle_with_stage():
     return go.Scatter(x=[0, 1, 2, 0], y=[0, 2, 0, 0], fill="toself")
@@ -144,22 +168,30 @@ def add_id_on_rectangle(x0, y0, id_bev):
     )
 
 
-def generate_charging_power_figure(df_available_solar_energy):
+def generate_charging_power_figure(df_available_solar_energy, charging_power_per_bev_per_minute_dict):
     global ladestrom_bev_fig
 
     # Set axes properties
     ladestrom_bev_fig.update_xaxes(range=[480, 960], showgrid=True)
-    ladestrom_bev_fig.update_yaxes(range=[0, 1.5])
+    ladestrom_bev_fig.update_yaxes(range=[0, 60])
 
     ladestrom_bev_fig.update_shapes(dict(xref='x', yref='y'))
 
     ladestrom_bev_fig.add_scatter(x=df_available_solar_energy['Minuten'],
-                                  y=df_available_solar_energy['Verfügbare Solarenergie'],
-                                  line_color='orange', name='Verfügbare Solarenergie')
+                                  y=df_available_solar_energy['Verfügbare Solarleistung'],
+                                  line_color='orange', name='Verfügbare Solarleistung')
 
-    ladestrom_bev_fig.update_layout(yaxis={'title': 'Energie in kWh'},
+    id_bev = 0
+    df_bev_0 = get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_dict, id_bev)
+    print(df_bev_0)
+
+    ladestrom_bev_fig.add_scatter(x=df_bev_0.index,
+                                  y=df_bev_0['Ladeleistung'],
+                                  line_color='blue', name='ID BEV {}'.format(id_bev))
+
+    ladestrom_bev_fig.update_layout(yaxis={'title': 'Energie in kW'},
                                     xaxis={'title': 'Minuten'},
-                                    title={'text': 'Ladeenergie pro Ladezeitraum eines BEVs',
+                                    title={'text': 'Ladeleistung pro Ladezeitraum eines BEVs',
                                            'font': {'size': 24}, 'x': 0.5, 'xanchor': 'center'},
                                     template='plotly_white')
     ladestrom_bev_fig.show()
