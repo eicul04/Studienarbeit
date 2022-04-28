@@ -22,15 +22,6 @@ def create_available_solar_power_figure(solar_peak_power):
     return available_solar_power_fig
 
 
-def create_charging_power_figure(simulation_day, solar_peak_power, bev_data):
-    add_rectangles_to_charging_power_figure_forecast(simulation_day, solar_peak_power)
-    df_available_solar_power = data.get_available_solar_power_dataframe_interpolated(solar_peak_power)
-    charging_power_per_bev_per_minute_dict = bev_data.charging_power_per_bev_per_minute_dict
-    # number_of_stages = get_number_of_changes_of_charging_power(charging_power_per_bev_per_minute_dict)
-    rectangle_points = get_points_of_rectangle_with_stages(bev_data)
-    generate_charging_power_figure(df_available_solar_power, charging_power_per_bev_per_minute_dict)
-
-
 def get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_dict, id_bev):
     charging_power_per_minute_dict = charging_power_per_bev_per_minute_dict[id_bev]
     return pd.DataFrame.from_dict(charging_power_per_minute_dict, orient='index', columns=['Ladeleistung'])
@@ -168,6 +159,15 @@ def add_id_on_rectangle(x0, y0, id_bev):
     )
 
 
+def create_charging_power_figure(simulation_day, solar_peak_power, bev_data):
+    # add_rectangles_to_charging_power_figure_forecast(simulation_day, solar_peak_power)
+    df_available_solar_power = data.get_available_solar_power_dataframe_interpolated(solar_peak_power)
+    charging_power_per_bev_per_minute_dict = bev_data.charging_power_per_bev_per_minute_dict
+    # number_of_stages = get_number_of_changes_of_charging_power(charging_power_per_bev_per_minute_dict)
+    rectangle_points = get_points_of_rectangle_with_stages(bev_data)
+    generate_charging_power_figure(df_available_solar_power, charging_power_per_bev_per_minute_dict)
+
+
 def generate_charging_power_figure(df_available_solar_energy, charging_power_per_bev_per_minute_dict):
     global ladestrom_bev_fig
 
@@ -175,19 +175,18 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
     ladestrom_bev_fig.update_xaxes(range=[480, 960], showgrid=True)
     ladestrom_bev_fig.update_yaxes(range=[0, 60])
 
-    ladestrom_bev_fig.update_shapes(dict(xref='x', yref='y'))
+    # ladestrom_bev_fig.update_shapes(dict(xref='x', yref='y'))
 
     ladestrom_bev_fig.add_scatter(x=df_available_solar_energy['Minuten'],
                                   y=df_available_solar_energy['Verfügbare Solarleistung'],
                                   line_color='orange', name='Verfügbare Solarleistung')
 
-    id_bev = 0
-    df_bev_0 = get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_dict, id_bev)
-    print(df_bev_0)
+    for id_bev in charging_power_per_bev_per_minute_dict.keys():
+        df_bev = get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_dict, id_bev)
 
-    ladestrom_bev_fig.add_scatter(x=df_bev_0.index,
-                                  y=df_bev_0['Ladeleistung'],
-                                  line_color='blue', name='ID BEV {}'.format(id_bev))
+        ladestrom_bev_fig.add_scatter(x=df_bev.index,
+                                      y=df_bev['Ladeleistung'],
+                                      line_color='blue', name='ID BEV {}'.format(id_bev))
 
     ladestrom_bev_fig.update_layout(yaxis={'title': 'Energie in kW'},
                                     xaxis={'title': 'Minuten'},
