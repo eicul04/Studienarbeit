@@ -1,7 +1,7 @@
 from enum import Enum
 
 from simulateDay import simulate_day
-from simulationData import safe_charging_list_per_minute
+from simulationData import safe_charging_list_per_minute, safe_bev_dict_per_minute
 from simulationService import calculate_charging_time, \
     calculate_number_of_new_bevs_charging, calculate_overflow_of_bevs_charging, \
     calculate_number_of_charging_stations, get_charging_power_per_bev, update_fueled_solar_energy, \
@@ -23,6 +23,7 @@ def start_simulation(solar_peak_power, max_charging_time, charging_power_pro_bev
     day_in_minute_steps = list(np.around(np.arange(480, 960 + 1, 1), 1))
     for minute in day_in_minute_steps:
         simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
+        safe_bev_dict_per_minute(minute, simulation_day, bev_data, table_dict, solar_peak_power)
         update_charging_bevs(solar_peak_power, minute, max_charging_time,
                              charging_power_pro_bev, simulation_day, algorithm_module, bev_data,
                              simulation_data)

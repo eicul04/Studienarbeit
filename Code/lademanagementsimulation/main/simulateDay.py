@@ -40,7 +40,6 @@ def update_parking_time_in_charging_bevs_list(current_minute, charging_bevs_list
 
 
 def safe_simulation_day_state(minute, simulation_day, bev_data, table_dict, solar_peak_power, simulation_data):
-    safe_bev_dict_per_minute(minute, simulation_day, bev_data, table_dict, solar_peak_power)
     safe_waiting_list_per_minute(simulation_day, simulation_data, minute)
     safe_available_solar_power_per_bev_per_minute(simulation_data, minute, solar_peak_power)
 

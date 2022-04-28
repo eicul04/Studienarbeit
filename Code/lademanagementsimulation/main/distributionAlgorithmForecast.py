@@ -6,7 +6,7 @@ import numpy as np
 from data import get_available_solar_power
 from simulateDay import simulate_day
 from simulationClasses import ParkingState
-from simulationData import safe_charging_list_per_minute
+from simulationData import safe_charging_list_per_minute, safe_bev_dict_per_minute_forecast
 from simulationService import calculate_parking_end, calculate_number_of_charging_stations, calculate_charging_end, \
     get_charging_power_per_bev, update_charging_time, update_fueled_solar_energy
 
@@ -37,6 +37,7 @@ def start_algorithm(simulation_data, simulation_day, maximum_charging_time, sola
     # update immer für wartende und noch nicht parkende autos
     for minute in day_in_minute_interval_steps:
         simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
+        safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, solar_peak_power)
         update_charging_bevs(minute, simulation_day)
         available_solar_power = get_available_solar_power(solar_peak_power, minute)
         update_fueled_solar_energy(available_solar_power, simulation_day)
@@ -128,8 +129,8 @@ def shorten_charging_interval_if_more_than_fair_share(highest_charging_energy,
 
 def get_charging_energy_data(highest_charging_energy, fair_share, forecast_dict, shortened_charging_interval_as_list):
     if highest_charging_energy > fair_share:
-        forecast_charging_energy = get_forecast_charging_energy(forecast_dict, shortened_charging_interval_as_list)
-        return forecast_charging_energy
+        fair_charging_energy = get_fair_charging_energy(forecast_dict, shortened_charging_interval_as_list)
+        return fair_charging_energy
     else:
         return highest_charging_energy
 
@@ -185,13 +186,13 @@ def set_charging_data(id_bev, simulation_day, charging_start, charging_end):
     simulation_day.bevs_dict.add_charging_data_for_forecast(id_bev, charging_start, charging_time)
 
 
-def get_forecast_charging_energy(forecast_dict, shortened_charging_interval_as_list):
+def get_fair_charging_energy(forecast_dict, shortened_charging_interval_as_list):
     last_minute = shortened_charging_interval_as_list[-1]
-    forecast_charging_energy = 0
+    fair_charging_energy = 0
     for minute in forecast_dict.keys():
         if minute <= last_minute + 1:
-            forecast_charging_energy += forecast_dict[minute][1]
-    return forecast_charging_energy
+            fair_charging_energy += forecast_dict[minute][1]
+    return fair_charging_energy
 
 
 def set_charging_energy_data(simulation_day, id_bev, fair_share_charging_energy, forecast_charging_energy):

@@ -29,7 +29,6 @@ def calculate_available_solar_power_course(df_solar_power, df_electricity_own_co
     return df_available_solar_power
 
 
-# TODO brauche ich die Methode noch?
 def calculate_available_solar_power_per_bev(solar_peak_power, number_of_waiting_bevs, minute):
     available_solar_power = get_available_solar_power_interpolated(solar_peak_power, minute)
     if number_of_waiting_bevs != 0:
