@@ -12,9 +12,9 @@ def add_charging_bevs_if_free_charging_stations(available_solar_power, minute, c
     number_of_free_charging_stations = get_number_of_available_charging_stations(
         number_of_charging_stations, number_of_charging_bevs)
     if number_of_free_charging_stations > 0:
-        number_of_waiting_bevs = len(simulation_day.waiting_bevs_list.get_waiting_bevs_list())
-        if number_of_waiting_bevs == 0:
-            update_unused_solar_energy(solar_peak_power, minute_interval, simulation_data)
+        number_of_waiting_bevs = simulation_day.waiting_bevs_list.get_number_of_waiting_bevs()
+        if number_of_waiting_bevs == 0 and number_of_charging_bevs == 0:
+            update_unused_solar_energy(solar_peak_power, minute, simulation_data, minute_interval)
         else:
             number_of_unoccupied_charging_stations = get_number_of_unoccupied_charging_stations(
                 number_of_free_charging_stations, number_of_waiting_bevs)
@@ -50,7 +50,9 @@ def get_number_of_unoccupied_charging_stations(number_of_free_charging_stations,
 
 
 # TODO in the middle of interval
-def update_unused_solar_energy(solar_peak_power, minute_interval, simulation_data):
-    unused_solar_power = get_available_solar_power(solar_peak_power, minute_interval)
-    unused_solar_energy = calculate_unused_solar_energy(unused_solar_power, minute_interval)
-    safe_unused_solar_energy(unused_solar_energy, simulation_data, minute_interval)
+def update_unused_solar_energy(solar_peak_power, minute, simulation_data, minute_interval):
+    if check_availability_solar_power(solar_peak_power, minute):
+        unused_solar_power = get_available_solar_power(solar_peak_power, minute)
+        unused_solar_energy = calculate_unused_solar_energy(unused_solar_power, minute_interval)
+        safe_unused_solar_energy(unused_solar_energy, simulation_data)
+

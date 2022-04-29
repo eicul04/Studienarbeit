@@ -11,6 +11,9 @@ def calculate_fair_share_charging_energy(available_solar_power_per_bev_in_parkin
     return fair_share
 
 
+# def calculate_fair_get_fair_share_charging_energy_with_number_of_free_charging_stations():
+
+
 def get_parking_start(simulation_day, id_bev):
     return in_minutes(simulation_day.bevs_dict.get_parking_start(id_bev))
 

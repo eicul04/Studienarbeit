@@ -37,10 +37,9 @@ def update_charging_bevs(solar_peak_power, minute, max_charging_time,
     update_because_charging_time_over(minute, max_charging_time, simulation_day, algorithm_module)
     if dataChecks.check_availability_solar_power(solar_peak_power, minute):
         available_solar_power = data.get_available_solar_power(solar_peak_power, minute)
-        add_charging_bevs_if_free_charging_stations(available_solar_power, minute, charging_power_pro_bev,
-                                                    simulation_day,
-                                                    bev_data, simulation_data, minute_interval)
-        update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval)
+        add_charging_bevs_if_free_charging_stations(available_solar_power, minute, charging_power_pro_bev, simulation_day,
+                                                bev_data, simulation_data, minute_interval, solar_peak_power)
+        update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval, minute)
 
 
 def update_because_charging_time_over(current_minute, max_charging_time, simulation_day, algorithm_module):

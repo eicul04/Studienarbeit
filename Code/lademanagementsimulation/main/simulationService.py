@@ -47,21 +47,30 @@ def calculate_overflow_of_bevs_charging(number_of_virtual_charging_stations, num
     return number_of_charging_bevs - number_of_virtual_charging_stations
 
 
-def update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval):
+def update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval, minute):
     number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
     if number_of_charging_bevs != 0:
         charging_power_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
         for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
-            simulation_day.bevs_dict.set_fueled_charging_energy(id_bev, charging_power_per_bev, minute_interval)
+            charging_time = get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev)
+            if charging_time % minute_interval == 0:
+                simulation_day.bevs_dict.set_fueled_charging_energy(id_bev, charging_power_per_bev, minute_interval)
+            else:
+                charging_interval = charging_time % minute_interval
+                simulation_day.bevs_dict.set_fueled_charging_energy(id_bev, charging_power_per_bev, charging_interval)
 
 
 def update_charging_time(minute, simulation_day):
     for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
-        charging_start = simulation_day.bevs_dict.get_charging_start(id_bev)
-        if charging_start is not None:
-            charging_time = calculate_charging_time(minute, simulation_day.bevs_dict.get_charging_start(id_bev))
-            simulation_day.bevs_dict.set_charging_time(id_bev, charging_time)
+        charging_time = get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev)
+        simulation_day.bevs_dict.set_charging_time(id_bev, charging_time)
 
 
-def safe_unused_solar_energy(unused_solar_energy, simulation_data, minute_interval):
-    simulation_data.add_unused_solar_energy(unused_solar_energy, minute_interval)
+def get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev):
+    charging_start = simulation_day.bevs_dict.get_charging_start(id_bev)
+    if charging_start is not None:
+        return calculate_charging_time(minute, charging_start)
+
+
+def safe_unused_solar_energy(unused_solar_energy, simulation_data):
+    simulation_data.add_unused_solar_energy(unused_solar_energy)
