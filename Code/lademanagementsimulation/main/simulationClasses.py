@@ -101,7 +101,8 @@ class BevDictionary:
 
     def get_fueled_charging_energy(self, id_bev):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
-        return latest_charging_tuple[2]
+        if latest_charging_tuple is not None:
+            return latest_charging_tuple[2]
 
     def get_charging_data(self, id_bev):
         bev_data = self.bevs_dict[id_bev]
@@ -119,21 +120,23 @@ class BevDictionary:
 
     def set_charging_time(self, id_bev, charging_time):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
-        latest_charging_tuple_as_list = list(latest_charging_tuple)
-        latest_charging_tuple_as_list[1] = charging_time
-        new_latest_charging_tuple = tuple(latest_charging_tuple_as_list)
-        self.get_charging_data(id_bev).remove(latest_charging_tuple)
-        self.get_charging_data(id_bev).append(new_latest_charging_tuple)
+        if latest_charging_tuple is not None:
+            latest_charging_tuple_as_list = list(latest_charging_tuple)
+            latest_charging_tuple_as_list[1] = charging_time
+            new_latest_charging_tuple = tuple(latest_charging_tuple_as_list)
+            self.get_charging_data(id_bev).remove(latest_charging_tuple)
+            self.get_charging_data(id_bev).append(new_latest_charging_tuple)
 
     def set_fueled_charging_energy(self, id_bev, charging_power, minute_interval):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
-        solar_energy_fueled_so_far = latest_charging_tuple[2]
-        latest_charging_tuple_as_list = list(latest_charging_tuple)
-        latest_charging_tuple_as_list[2] = round(calculate_new_fueled_solar_energy(charging_power,
-                                                                                   solar_energy_fueled_so_far, minute_interval), 3)
-        new_latest_charging_tuple = tuple(latest_charging_tuple_as_list)
-        self.get_charging_data(id_bev).remove(latest_charging_tuple)
-        self.get_charging_data(id_bev).append(new_latest_charging_tuple)
+        if latest_charging_tuple is not None:
+            solar_energy_fueled_so_far = latest_charging_tuple[2]
+            latest_charging_tuple_as_list = list(latest_charging_tuple)
+            latest_charging_tuple_as_list[2] = round(calculate_new_fueled_solar_energy(charging_power,
+                                                                                       solar_energy_fueled_so_far, minute_interval), 3)
+            new_latest_charging_tuple = tuple(latest_charging_tuple_as_list)
+            self.get_charging_data(id_bev).remove(latest_charging_tuple)
+            self.get_charging_data(id_bev).append(new_latest_charging_tuple)
 
 
 class WaitingBevsList:
@@ -145,7 +148,8 @@ class WaitingBevsList:
         return self.waiting_bevs_list
 
     def get_first_waiting_bev_of_list(self):
-        return self.waiting_bevs_list[0]
+        if len(self.waiting_bevs_list) > 0:
+            return self.waiting_bevs_list[0]
 
     def add_bev(self, id_bev):
         self.waiting_bevs_list.append(id_bev)
@@ -166,7 +170,8 @@ class ChargingBevsList:
         return self.charging_bevs_list
 
     def get_first_charging_bev_of_list(self):
-        return self.charging_bevs_list[0]
+        if len(self.charging_bevs_list) > 0:
+            return self.charging_bevs_list[0]
 
     def add_bev(self, id_bev):
         self.charging_bevs_list.append(id_bev)

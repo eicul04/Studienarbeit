@@ -53,8 +53,9 @@ def update_because_fair_charged_energy_reached(simulation_day):
     for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
         fair_share_charging_energy = simulation_day.bevs_dict.get_fair_share_charging_energy(id_bev)
         already_fueled_charging_energy = simulation_day.bevs_dict.get_fueled_charging_energy(id_bev)
-        if already_fueled_charging_energy >= fair_share_charging_energy:
-            simulation_day.stop_charging(id_bev)
+        if already_fueled_charging_energy is not None:
+            if already_fueled_charging_energy >= fair_share_charging_energy:
+                simulation_day.stop_charging(id_bev)
     simulation_day.remove_from_list(simulation_day.charging_bevs_list)
 
 
