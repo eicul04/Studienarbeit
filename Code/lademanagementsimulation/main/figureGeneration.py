@@ -180,8 +180,12 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
                                   line_color='orange', name='Verfügbare Solarleistung')
 
     print(charging_power_per_bev_per_minute_dict, "charging power per minute dict")
-    for id_bev in charging_power_per_bev_per_minute_dict.keys():
-        df_bev = get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_dict, id_bev)
+    charging_power_per_bev_per_minute_dict_manipulated_for_visualisation = manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict)
+    print(charging_power_per_bev_per_minute_dict_manipulated_for_visualisation, "charging_power_per_bev_per_minute_dict_manipulated_for_visualisation")
+
+    for id_bev in charging_power_per_bev_per_minute_dict_manipulated_for_visualisation.keys():
+
+        df_bev = get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_dict_manipulated_for_visualisation, id_bev)
 
         ladestrom_bev_fig.add_scatter(x=df_bev.index,
                                       y=df_bev['Ladeleistung'],
@@ -193,6 +197,31 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
                                            'font': {'size': 24}, 'x': 0.5, 'xanchor': 'center'},
                                     template='plotly_white')
     ladestrom_bev_fig.show()
+
+
+def manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict):
+    all_minutes_to_check_lists = []
+    all_charging_power_list_to_minutes_to_check_lists = []
+    for id_bev, charging_power_per_minute in charging_power_per_bev_per_minute_dict.items():
+        already_used_minutes = []
+        for minutes_to_check_list in all_minutes_to_check_lists:
+            list_index = all_minutes_to_check_lists.index(minutes_to_check_list)
+            for minute_to_check in minutes_to_check_list:
+                value_index = minutes_to_check_list.index(minute_to_check)
+                charging_power_list_to_minutes_to_check_list = all_charging_power_list_to_minutes_to_check_lists[list_index]
+                if minute_to_check in charging_power_per_minute.keys():
+                    if minute_to_check not in already_used_minutes:
+                        charging_power_per_minute[minute_to_check] = charging_power_per_minute[minute_to_check] + \
+                                                                 charging_power_list_to_minutes_to_check_list[value_index]
+                    already_used_minutes.append(minute_to_check)
+        minutes_to_check_list = []
+        charging_power_list_to_minutes_to_check_list = []
+        for minute in charging_power_per_minute.keys():
+            minutes_to_check_list.append(minute)
+            charging_power_list_to_minutes_to_check_list.append(charging_power_per_minute[minute])
+        all_minutes_to_check_lists.append(minutes_to_check_list)
+        all_charging_power_list_to_minutes_to_check_lists.append(charging_power_list_to_minutes_to_check_list)
+    return charging_power_per_bev_per_minute_dict
 
 
 def create_bev_number_figure(bev_data):

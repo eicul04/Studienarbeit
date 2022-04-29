@@ -108,7 +108,6 @@ def set_charging_end_if_less_than_next_interval(residual_charging_energy, solar_
 
 
 def get_residual_charging_time(residual_charging_energy, solar_power_per_bev_for_next_interval):
-    result = (residual_charging_energy / solar_power_per_bev_for_next_interval) * 60
     return (residual_charging_energy / solar_power_per_bev_for_next_interval) * 60
 
 
