@@ -1,22 +1,27 @@
 from data import get_available_solar_power
 from dataChecks import check_availability_solar_power
-from simulationService import update_fueled_solar_energy, calculate_number_of_new_bevs_charging, \
-    calculate_overflow_of_bevs_charging, calculate_number_of_charging_stations
+from simulationService import update_fueled_solar_energy, calculate_overflow_of_bevs_charging, \
+    calculate_number_of_charging_stations, safe_unused_solar_energy, calculate_unused_solar_energy
 
 
 def add_charging_bevs_if_free_charging_stations(available_solar_power, minute, charging_power_pro_bev, simulation_day,
-                                                bev_data, simulation_data, minute_interval):
+                                                bev_data, simulation_data, minute_interval, solar_peak_power):
     number_of_charging_stations = get_number_of_charging_stations(available_solar_power,
                                                                   charging_power_pro_bev)
     number_of_charging_bevs = get_number_of_charging_bevs(simulation_day)
-    number_of_available_charging_stations = get_number_of_available_charging_stations(
+    number_of_free_charging_stations = get_number_of_available_charging_stations(
         number_of_charging_stations, number_of_charging_bevs)
-    if number_of_available_charging_stations > 0:
-        add_charging_bevs_because_of_free_charging_stations(calculate_number_of_new_bevs_charging(number_of_charging_stations,
-                                                                                                  number_of_charging_bevs, minute,
-                                                                                                  available_solar_power,
-                                                                                                  simulation_day, simulation_data, minute_interval),
-                                                            minute, simulation_day)
+    if number_of_free_charging_stations > 0:
+        number_of_waiting_bevs = len(simulation_day.waiting_bevs_list.get_waiting_bevs_list())
+        if number_of_waiting_bevs == 0:
+            update_unused_solar_energy(solar_peak_power, minute_interval, simulation_data)
+        else:
+            number_of_unoccupied_charging_stations = get_number_of_unoccupied_charging_stations(
+                number_of_free_charging_stations, number_of_waiting_bevs)
+            number_of_bevs_to_add = number_of_free_charging_stations
+            if number_of_unoccupied_charging_stations > 0:
+                number_of_bevs_to_add = number_of_free_charging_stations - number_of_unoccupied_charging_stations
+            add_charging_bevs(number_of_bevs_to_add, minute, simulation_day)
 
 
 def get_number_of_charging_stations(available_solar_power, charging_power_pro_bev):
@@ -27,13 +32,25 @@ def get_number_of_charging_bevs(simulation_day):
     return simulation_day.charging_bevs_list.get_number_of_charging_bevs()
 
 
-def get_number_of_available_charging_stations(number_of_virtual_charging_stations, number_of_charging_bevs):
-    return number_of_virtual_charging_stations - number_of_charging_bevs
+def get_number_of_available_charging_stations(number_of_charging_stations, number_of_charging_bevs):
+    return number_of_charging_stations - number_of_charging_bevs
 
 
-def add_charging_bevs_because_of_free_charging_stations(number_of_new_bevs_charging, minute, simulation_day):
-    number_of_new_bevs_charging_as_list = list(range(0, number_of_new_bevs_charging))
-    for item in number_of_new_bevs_charging_as_list:
-        simulation_day.start_charging(simulation_day.waiting_bevs_list.get_first_waiting_bev_of_list())
-        simulation_day.init_charging_data(simulation_day.waiting_bevs_list.get_first_waiting_bev_of_list(), minute)
+def add_charging_bevs(number_of_bevs_to_add, minute, simulation_day):
+    iterator = 0
+    while iterator < number_of_bevs_to_add:
+        first_bev_waiting_on_list = simulation_day.waiting_bevs_list.get_first_waiting_bev_of_list()
+        simulation_day.start_charging(first_bev_waiting_on_list)
+        simulation_day.init_charging_data(first_bev_waiting_on_list, minute)
+        iterator += 1
 
+
+def get_number_of_unoccupied_charging_stations(number_of_free_charging_stations, number_of_waiting_bevs):
+    return number_of_free_charging_stations - number_of_waiting_bevs
+
+
+# TODO in the middle of interval
+def update_unused_solar_energy(solar_peak_power, minute_interval, simulation_data):
+    unused_solar_power = get_available_solar_power(solar_peak_power, minute_interval)
+    unused_solar_energy = calculate_unused_solar_energy(unused_solar_power, minute_interval)
+    safe_unused_solar_energy(unused_solar_energy, simulation_data, minute_interval)

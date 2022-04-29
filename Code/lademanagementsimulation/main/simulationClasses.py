@@ -237,6 +237,16 @@ class SimulationDay:
             list_with_bev_to_remove.remove_bev(id_bev)
         self.bevs_to_remove = set()
 
+    def reset_simulation_day(self):
+        self.reset_parking_states()
+        self.waiting_bevs_list = WaitingBevsList()
+        self.charging_bevs_list = ChargingBevsList()
+
+    def reset_parking_states(self):
+        for id_bev in self.bevs_dict.get_bevs_dict():
+            self.bevs_dict.set_parking_state(id_bev, ParkingState.NON_PARKING)
+
+
     def add_arriving_waiting_bevs(self, minute):
         for id_bev in self.bevs_dict.get_keys():
             if timeTransformation.in_minutes(self.bevs_dict.get_parking_start(id_bev)) == minute:

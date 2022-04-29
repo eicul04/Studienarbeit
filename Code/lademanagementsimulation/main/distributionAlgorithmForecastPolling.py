@@ -8,7 +8,7 @@ from data import get_available_solar_power
 from dataChecks import check_availability_solar_power
 from forecastCalculation import get_available_solar_power_in_parking_interval_dict, calculate_fair_share_charging_energy
 from simulateDay import simulate_day
-from simulationData import safe_bev_dict_per_minute, safe_charging_list_per_minute
+from simulationData import safe_bev_dict_per_minute, safe_charging_list_per_minute, safe_bev_dict_per_minute_forecast
 from simulationService import update_charging_time, calculate_charging_time, update_fueled_solar_energy
 
 
@@ -17,10 +17,11 @@ def start_simulation(solar_peak_power, charging_power_pro_bev,
     day_in_minute_steps = list(np.around(np.arange(480, 960 + 1, 1), 1))
     for minute in day_in_minute_steps:
         init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
+    simulation_day.reset_simulation_day()
     set_fair_charging_energy(simulation_day, simulation_data, minute_interval)
     for minute in day_in_minute_steps:
         simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
-        safe_bev_dict_per_minute(minute, simulation_day, bev_data, table_dict, solar_peak_power)
+        safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, solar_peak_power)
         update_charging_bevs(solar_peak_power, minute,
                              charging_power_pro_bev, simulation_day, bev_data,
                              simulation_data, minute_interval)
@@ -44,7 +45,7 @@ def update_charging_bevs(solar_peak_power, minute,
     update_because_fair_charged_energy_reached(simulation_day)
     available_solar_power = get_available_solar_power(solar_peak_power, minute)
     update_charging_bevs_for_next_interval(available_solar_power, minute, charging_power_pro_bev, simulation_day,
-                                                bev_data, simulation_data, minute_interval)
+                                                bev_data, simulation_data, minute_interval, solar_peak_power)
     update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval)
     # update_residual_charging_time(simulation_day)
 
@@ -60,9 +61,9 @@ def update_because_fair_charged_energy_reached(simulation_day):
 
 
 def update_charging_bevs_for_next_interval(available_solar_power, minute, charging_power_pro_bev, simulation_day,
-                                                bev_data, simulation_data, minute_interval):
+                                                bev_data, simulation_data, minute_interval, solar_peak_power):
     add_charging_bevs_if_free_charging_stations(available_solar_power, minute, charging_power_pro_bev,
-                                                simulation_day, bev_data, simulation_data, minute_interval)
+                                                simulation_day, bev_data, simulation_data, minute_interval, solar_peak_power)
 
 
 # TODO hier statt stufen funktion Mitte vom Interval nehmen

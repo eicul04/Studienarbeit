@@ -3,8 +3,7 @@ from enum import Enum
 from chargingStationOccupancy import add_charging_bevs_if_free_charging_stations
 from simulateDay import simulate_day
 from simulationData import safe_charging_list_per_minute, safe_bev_dict_per_minute
-from simulationService import calculate_charging_time, \
-    calculate_number_of_new_bevs_charging, calculate_overflow_of_bevs_charging, \
+from simulationService import calculate_charging_time, calculate_overflow_of_bevs_charging, \
     calculate_number_of_charging_stations, get_charging_power_per_bev, update_fueled_solar_energy, \
     update_charging_time
 

@@ -32,6 +32,7 @@ def start_algorithm(simulation_data, simulation_day, maximum_charging_time, sola
     day_in_minute_interval_steps = list(np.around(np.arange(480, 960 + 1, minute_interval), 1))
     for minute in day_in_minute_interval_steps:
         init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
+    simulation_day.reset_simulation_day()
     determine_charging_distribution(charging_power_per_bev, maximum_charging_time, simulation_data, simulation_day,
                                     solar_peak_power, minute_interval, bev_data)
     # update charging_times bei Veränderungen zum ursprünglichen Plan (bevs_dict Parkzeiten)
