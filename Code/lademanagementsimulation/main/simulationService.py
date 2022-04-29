@@ -46,22 +46,25 @@ def calculate_overflow_of_bevs_charging(number_of_virtual_charging_stations, num
     return number_of_charging_bevs - number_of_virtual_charging_stations
 
 
-def update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute):
-    number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
-    if number_of_charging_bevs != 0:
-        charging_power_per_bev = get_charging_power_per_bev(available_solar_power_last_interval, number_of_charging_bevs)
-        for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
-            charging_time = get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev)
-            if charging_time % minute_interval == 0:
-                print("Update Charging energy of BEVs which were added in interval")
-                new_charging_energy = calculate_new_charging_energy(charging_power_per_bev, minute_interval)
-                simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, new_charging_energy)
-            else:
-                print("Update Charging energy of BEVs which came between intervals")
-                charging_interval = charging_time % minute_interval
-                print("charging interval zur Energie Berechnung: ", charging_interval)
-                new_charging_energy = calculate_new_charging_energy(charging_power_per_bev, charging_interval)
-                simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, new_charging_energy)
+def update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute, simulation_data):
+    # Number of charging bevs für das letzte Intervall bekommen
+    if minute != 480:
+        last_interval = minute - minute_interval
+        number_of_charging_bevs_of_last_interval = len(simulation_data.charging_list_per_minute_dict[last_interval])
+        if number_of_charging_bevs_of_last_interval != 0:
+            charging_power_per_bev = get_charging_power_per_bev(available_solar_power_last_interval, number_of_charging_bevs_of_last_interval)
+            for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
+                charging_time = get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev)
+                if charging_time % minute_interval == 0:
+                    print("Update Charging energy of BEVs which were added in interval")
+                    new_charging_energy = calculate_new_charging_energy(charging_power_per_bev, minute_interval)
+                    simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, new_charging_energy)
+                else:
+                    print("Update Charging energy of BEVs which came between intervals")
+                    charging_interval = charging_time % minute_interval
+                    print("charging interval zur Energie Berechnung: ", charging_interval)
+                    new_charging_energy = calculate_new_charging_energy(charging_power_per_bev, charging_interval)
+                    simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, new_charging_energy)
 
 
 def update_charging_time(minute, simulation_day):

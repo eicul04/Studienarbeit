@@ -43,7 +43,7 @@ def start_algorithm(simulation_data, simulation_day, maximum_charging_time, sola
         safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, solar_peak_power)
         update_charging_bevs(minute, simulation_day)
         available_solar_power = get_available_solar_power(solar_peak_power, minute)
-        update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval, minute)
+        update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval, minute, simulation_data)
         for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
             number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
             charging_power_real_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
