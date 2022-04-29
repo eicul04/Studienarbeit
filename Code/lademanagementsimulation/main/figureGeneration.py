@@ -1,5 +1,5 @@
 from collections import OrderedDict
-
+from collections import defaultdict
 import pandas as pd
 import plotly.express as px
 import numpy as np
@@ -179,17 +179,29 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
                                   y=df_available_solar_energy['Verfügbare Solarleistung'],
                                   line_color='orange', name='Verfügbare Solarleistung')
 
-    print(charging_power_per_bev_per_minute_dict, "charging power per minute dict")
-    charging_power_per_bev_per_minute_dict_manipulated_for_visualisation = manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict)
-    print(charging_power_per_bev_per_minute_dict_manipulated_for_visualisation, "charging_power_per_bev_per_minute_dict_manipulated_for_visualisation")
+    charging_power_per_bev_per_minute_dict_manipulated_for_visualisation = \
+        manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict)
 
-    for id_bev in charging_power_per_bev_per_minute_dict_manipulated_for_visualisation.keys():
+    for id_bev, charging_power_per_minute in charging_power_per_bev_per_minute_dict_manipulated_for_visualisation.items():
+        minutes_for_id_bev = []
+        charging_power_per_minute_for_id_bev = []
+        for minute in charging_power_per_minute.keys():
+            minutes_for_id_bev.append(minute)
+            charging_power_per_minute_for_id_bev.append(charging_power_per_minute[minute])
 
-        df_bev = get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_dict_manipulated_for_visualisation, id_bev)
+        df_bev = get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_dict_manipulated_for_visualisation,
+                                                           id_bev)
+        df_bev.loc[minutes_for_id_bev[0]] = [0]
+        df_bev_zero_values = pd.DataFrame([[charging_power_per_minute_for_id_bev[0]], [0]], columns=['Ladeleistung'],
+                                          index=[minutes_for_id_bev[0], minutes_for_id_bev[-1]])
+
+        df_bev = df_bev.append(df_bev_zero_values)
+        df_bev.index = df_bev.index + 1  # shifting index
+        df_bev = df_bev.sort_index()
 
         ladestrom_bev_fig.add_scatter(x=df_bev.index,
                                       y=df_bev['Ladeleistung'],
-                                      line_color='blue', mode='lines', name='ID BEV {}'.format(id_bev))
+                                      line_color='green', mode='lines', name='ID BEV {}'.format(id_bev))
 
     ladestrom_bev_fig.update_layout(yaxis={'title': 'Energie in kW'},
                                     xaxis={'title': 'Minuten'},
@@ -200,27 +212,13 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
 
 
 def manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict):
-    all_minutes_to_check_lists = []
-    all_charging_power_list_to_minutes_to_check_lists = []
+    previous_sums = defaultdict(int)
+
     for id_bev, charging_power_per_minute in charging_power_per_bev_per_minute_dict.items():
-        already_used_minutes = []
-        for minutes_to_check_list in all_minutes_to_check_lists:
-            list_index = all_minutes_to_check_lists.index(minutes_to_check_list)
-            for minute_to_check in minutes_to_check_list:
-                value_index = minutes_to_check_list.index(minute_to_check)
-                charging_power_list_to_minutes_to_check_list = all_charging_power_list_to_minutes_to_check_lists[list_index]
-                if minute_to_check in charging_power_per_minute.keys():
-                    if minute_to_check not in already_used_minutes:
-                        charging_power_per_minute[minute_to_check] = charging_power_per_minute[minute_to_check] + \
-                                                                 charging_power_list_to_minutes_to_check_list[value_index]
-                    already_used_minutes.append(minute_to_check)
-        minutes_to_check_list = []
-        charging_power_list_to_minutes_to_check_list = []
         for minute in charging_power_per_minute.keys():
-            minutes_to_check_list.append(minute)
-            charging_power_list_to_minutes_to_check_list.append(charging_power_per_minute[minute])
-        all_minutes_to_check_lists.append(minutes_to_check_list)
-        all_charging_power_list_to_minutes_to_check_lists.append(charging_power_list_to_minutes_to_check_list)
+            charging_power_per_minute[minute] += previous_sums[minute]
+            previous_sums[minute] = charging_power_per_minute[minute]
+
     return charging_power_per_bev_per_minute_dict
 
 
@@ -244,10 +242,10 @@ def create_bev_number_figure(bev_data):
     bev_number_figure = px.line()
 
     bev_number_figure.add_scatter(x=df_waiting_bevs['Minuten'], y=df_waiting_bevs['Wartende BEVs'],
-                                  line_color='orange', name='Wartende BEVs')
+                                  line_color='red', name='Wartende BEVs')
 
     bev_number_figure.add_scatter(x=df_charging_bevs['Minuten'], y=df_charging_bevs['Ladende BEVs'],
-                                  line_color='green', name='Ladende BEVs')
+                                  line_color='blue', name='Ladende BEVs')
 
     bev_number_figure.update_layout(yaxis={'title': 'Anzahl BEVs'},
                                     xaxis={'title': 'Minuten'},
