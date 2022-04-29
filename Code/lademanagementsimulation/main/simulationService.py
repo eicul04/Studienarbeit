@@ -46,10 +46,10 @@ def calculate_overflow_of_bevs_charging(number_of_virtual_charging_stations, num
     return number_of_charging_bevs - number_of_virtual_charging_stations
 
 
-def update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval, minute):
+def update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute):
     number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
     if number_of_charging_bevs != 0:
-        charging_power_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
+        charging_power_per_bev = get_charging_power_per_bev(available_solar_power_last_interval, number_of_charging_bevs)
         for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
             charging_time = get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev)
             if charging_time % minute_interval == 0:

@@ -27,6 +27,9 @@ def start_simulation(solar_peak_power, charging_power_pro_bev,
         simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
         print("Waiting BEVs: ", simulation_day.waiting_bevs_list.get_waiting_bevs_list())
         safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, solar_peak_power)
+        # Solar-Energie die im letzten, vergangenen Minuten-Intervall getankt wurde
+        available_solar_power_last_interval = get_available_solar_power(solar_peak_power, minute - minute_interval)
+        update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute)
         update_charging_bevs(solar_peak_power, minute,
                              charging_power_pro_bev, simulation_day, bev_data,
                              simulation_data, minute_interval)
@@ -57,7 +60,6 @@ def update_charging_bevs(solar_peak_power, minute,
     available_solar_power = get_available_solar_power(solar_peak_power, minute)
     update_charging_bevs_for_next_interval(available_solar_power, minute, charging_power_pro_bev, simulation_day,
                                                 bev_data, simulation_data, minute_interval, solar_peak_power)
-    update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval, minute)
     update_residual_charging_time(simulation_day, solar_peak_power, minute, minute_interval, simulation_data)
 
 

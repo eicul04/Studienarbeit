@@ -48,7 +48,8 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
 
     charging_power_per_bev_per_minute_dict_manipulated_for_visualisation = \
         manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict)
-
+    print(charging_power_per_bev_per_minute_dict_manipulated_for_visualisation,
+          "charging_power_per_bev_per_minute_dict_manipulated_for_visualisation")
     for id_bev, charging_power_per_minute in charging_power_per_bev_per_minute_dict_manipulated_for_visualisation.items():
         minutes_for_id_bev = []
         charging_power_per_minute_for_id_bev = []
@@ -65,6 +66,8 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
         df_bev = df_bev.append(df_bev_zero_values)
         df_bev.index = df_bev.index + 1  # shifting index
         df_bev = df_bev.sort_index()
+        print("Dataframe for BEV with ID: ", id_bev)
+        print(df_bev)
 
         ladestrom_bev_fig.add_scatter(x=df_bev.index,
                                       y=df_bev['Ladeleistung'],
