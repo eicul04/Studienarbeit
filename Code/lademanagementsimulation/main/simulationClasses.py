@@ -85,7 +85,7 @@ class BevDictionary:
         bev_charging_data.append(fair_share_charging_energy)
 
     def get_fair_share_charging_energy(self, id_bev):
-        return self.bevs_dict[id_bev][3]
+        return self.bevs_dict[id_bev][3][0]
 
     def get_charging_time(self, id_bev):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
@@ -103,6 +103,7 @@ class BevDictionary:
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
         if latest_charging_tuple is not None:
             return latest_charging_tuple[2]
+        return 0
 
     def get_charging_data(self, id_bev):
         bev_data = self.bevs_dict[id_bev]

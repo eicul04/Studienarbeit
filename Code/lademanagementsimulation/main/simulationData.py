@@ -243,7 +243,7 @@ def create_plotly_table_forecast(bev_dict_specific_minute, solar_peak_power, min
         charging_tuple_time = []
         for charging_tuple in bev_data[2]:
             charging_tuple_start.append(as_time_of_day_from_minute(charging_tuple[0]))
-            charging_tuple_time.append(charging_tuple[1])
+            charging_tuple_time.append(round(charging_tuple[1], 2))
             fueled_solar_energy_sum += charging_tuple[2]
             number_of_charges_value += 1
         fueled_solar_energy.append(round(fueled_solar_energy_sum, 2))
