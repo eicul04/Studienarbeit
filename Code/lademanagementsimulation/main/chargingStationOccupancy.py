@@ -28,10 +28,6 @@ def update_charging_place_occupancy(available_solar_power, minute, charging_powe
                                                                                        available_solar_power,
                                                                                        simulation_day, simulation_data, minute_interval),
                                                  minute, simulation_day)
-    elif number_of_available_charging_stations < 0:
-        remove_charging_bevs_because_of_lack_of_places(calculate_overflow_of_bevs_charging(number_of_charging_stations,
-                                                                                           number_of_charging_bevs), simulation_day
-                                                       , bev_data)
 
 
 def get_number_of_charging_stations(available_solar_power, charging_power_pro_bev):
@@ -52,12 +48,3 @@ def add_charging_bevs_because_of_free_places(number_of_new_bevs_charging, minute
         simulation_day.start_charging(simulation_day.waiting_bevs_list.get_first_waiting_bev_of_list())
         simulation_day.init_charging_data(simulation_day.waiting_bevs_list.get_first_waiting_bev_of_list(), minute)
 
-
-def remove_charging_bevs_because_of_lack_of_places(overflow_of_bevs_charging, simulation_day, bev_data):
-    overflow_of_bevs_charging_as_list = list(range(0, overflow_of_bevs_charging))
-    for item in overflow_of_bevs_charging_as_list:
-        id_bev = simulation_day.charging_bevs_list.get_first_charging_bev_of_list()
-        simulation_day.waiting_bevs_list.add_bev(id_bev)
-        bev_data.increase_number_of_interrupted_charging_processes()
-        simulation_day.stop_charging(id_bev)
-    simulation_day.remove_from_list(simulation_day.charging_bevs_list)
