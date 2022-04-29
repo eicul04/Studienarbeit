@@ -230,7 +230,6 @@ def create_plotly_table_forecast(bev_dict_specific_minute, solar_peak_power, min
     charging_time = []
     fueled_solar_energy = []
     fair_share_charging_energy = []
-    forecast_charging_energy = []
 
     for id_bev in bev_dict_specific_minute.keys():
         bev_data = bev_dict_specific_minute[id_bev]
@@ -238,7 +237,6 @@ def create_plotly_table_forecast(bev_dict_specific_minute, solar_peak_power, min
         parking_starts.append(as_time_of_day_from_hour(bev_data[0][0]))
         parking_duration.append(bev_data[0][1])
         fair_share_charging_energy.append(round(bev_data[3][0], 2))
-        forecast_charging_energy.append(round(bev_data[3][1], 2))
         fueled_solar_energy_sum = 0
         number_of_charges_value = 0
         charging_tuple_start = []
@@ -256,8 +254,7 @@ def create_plotly_table_forecast(bev_dict_specific_minute, solar_peak_power, min
 
     fig = go.Figure(
         data=[go.Table(header=dict(values=['ID BEV', 'Zustand', 'Parkstart', 'Parkdauer in h', 'Ladestart',
-                                           'Ladedauer in min', 'Getankte Solarenergie in kWh', 'Fairer Solarenergie Anteil in kWh',
-                                           'Prognostizierte Solarenergie in kWh']),
+                                           'Ladedauer in min', 'Getankte Solarenergie in kWh', 'Fairer Solarenergie Anteil in kWh']),
                        cells=dict(values=[[id_bev for id_bev in bev_dict_specific_minute.keys()],
                                           [item for item in parking_states],
                                           [item for item in parking_starts],
@@ -266,7 +263,6 @@ def create_plotly_table_forecast(bev_dict_specific_minute, solar_peak_power, min
                                           [item for item in charging_time],
                                           [item for item in fueled_solar_energy],
                                           [item for item in fair_share_charging_energy],
-                                          [item for item in forecast_charging_energy],
                                           ],
                                   fill=dict(color=[[
                                       'lightgray' if state == 'nicht parkend' else 'lightyellow' if state == 'wartend' else 'palegreen'

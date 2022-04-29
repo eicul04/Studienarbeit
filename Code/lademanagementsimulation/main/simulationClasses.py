@@ -80,16 +80,12 @@ class BevDictionary:
         bev_charging_data = self.bevs_dict[id_bev][2]
         bev_charging_data.append((charging_start, charging_end, 0))
 
-    def add_fair_share_solar_energy(self, id_bev, fair_share_charging_energy):
+    def add_fair_share_charging_energy(self, id_bev, fair_share_charging_energy):
         bev_charging_data = self.bevs_dict[id_bev][3]
         bev_charging_data.append(fair_share_charging_energy)
 
-    def get_charging_energy_data(self, id_bev):
+    def get_fair_share_charging_energy(self, id_bev):
         return self.bevs_dict[id_bev][3]
-
-    def add_forecast_solar_energy(self, id_bev, forecast_charging_energy):
-        bev_charging_data = self.bevs_dict[id_bev][3]
-        bev_charging_data.append(forecast_charging_energy)
 
     def get_charging_time(self, id_bev):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
@@ -102,6 +98,10 @@ class BevDictionary:
         if latest_charging_tuple is not None:
             return latest_charging_tuple[0]
         return None
+
+    def get_fueled_charging_energy(self, id_bev):
+        latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
+        return latest_charging_tuple[2]
 
     def get_charging_data(self, id_bev):
         bev_data = self.bevs_dict[id_bev]
@@ -125,7 +125,7 @@ class BevDictionary:
         self.get_charging_data(id_bev).remove(latest_charging_tuple)
         self.get_charging_data(id_bev).append(new_latest_charging_tuple)
 
-    def set_fueled_solar_energy(self, id_bev, charging_power, minute_interval):
+    def set_fueled_charging_energy(self, id_bev, charging_power, minute_interval):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
         solar_energy_fueled_so_far = latest_charging_tuple[2]
         latest_charging_tuple_as_list = list(latest_charging_tuple)

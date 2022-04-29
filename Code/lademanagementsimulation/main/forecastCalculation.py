@@ -1,4 +1,5 @@
-from distributionAlgorithmForecast import get_parking_interval_in_minutes_as_list
+import numpy as np
+
 from simulationService import calculate_parking_end
 from timeTransformation import in_minutes
 
@@ -43,3 +44,7 @@ def adapt_parking_end_to_simulation_end(parking_end):
     if parking_end > 960:
         return 960
     return parking_end
+
+
+def get_parking_interval_in_minutes_as_list(parking_start, parking_end, minute_interval):
+    return list(np.arange(parking_start, parking_end, minute_interval))

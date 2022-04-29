@@ -69,7 +69,7 @@ def update_fueled_solar_energy(available_solar_power, simulation_day, minute_int
     if number_of_charging_bevs != 0:
         charging_power_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
         for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
-            simulation_day.bevs_dict.set_fueled_solar_energy(id_bev, charging_power_per_bev, minute_interval)
+            simulation_day.bevs_dict.set_fueled_charging_energy(id_bev, charging_power_per_bev, minute_interval)
 
 
 def update_charging_time(minute, simulation_day):

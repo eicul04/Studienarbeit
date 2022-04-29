@@ -1,6 +1,6 @@
 from enum import Enum
 
-from chargingStationOccupancy import update_because_change_in_number_of_charging_stations
+from chargingStationOccupancy import add_charging_bevs_if_free_charging_stations
 from simulateDay import simulate_day
 from simulationData import safe_charging_list_per_minute, safe_bev_dict_per_minute
 from simulationService import calculate_charging_time, \
@@ -36,10 +36,12 @@ def update_charging_bevs(solar_peak_power, minute, max_charging_time,
                          simulation_data, minute_interval):
     update_charging_time(minute, simulation_day)
     update_because_charging_time_over(minute, max_charging_time, simulation_day, algorithm_module)
-    update_because_change_in_number_of_charging_stations(solar_peak_power, minute,
-                                                         charging_power_pro_bev, simulation_day,
-                                                         bev_data,
-                                                         simulation_data, minute_interval)
+    if dataChecks.check_availability_solar_power(solar_peak_power, minute):
+        available_solar_power = data.get_available_solar_power(solar_peak_power, minute)
+        add_charging_bevs_if_free_charging_stations(available_solar_power, minute, charging_power_pro_bev,
+                                                    simulation_day,
+                                                    bev_data, simulation_data, minute_interval)
+        update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval)
 
 
 def update_because_charging_time_over(current_minute, max_charging_time, simulation_day, algorithm_module):

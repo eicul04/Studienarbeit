@@ -7,7 +7,6 @@ from data import get_available_solar_power
 from forecastCalculation import get_parking_start, get_parking_end, get_available_solar_power_in_parking_interval_dict, \
     calculate_fair_share_charging_energy
 from simulateDay import simulate_day
-from simulationClasses import ParkingState
 from simulationData import safe_charging_list_per_minute, safe_bev_dict_per_minute_forecast
 from simulationService import calculate_parking_end, calculate_number_of_charging_stations, calculate_charging_end, \
     get_charging_power_per_bev, update_charging_time, update_fueled_solar_energy
@@ -143,10 +142,6 @@ def get_charging_energy_data(highest_charging_energy, fair_share, forecast_dict,
         return highest_charging_energy
 
 
-def get_parking_interval_in_minutes_as_list(parking_start, parking_end, minute_interval):
-    return list(np.arange(parking_start, parking_end, minute_interval))
-
-
 def get_minute_when_max_available_solar_power_per_bev(available_solar_power_per_bev_in_parking_interval_dict):
     return max(available_solar_power_per_bev_in_parking_interval_dict,
                key=available_solar_power_per_bev_in_parking_interval_dict.get)
@@ -156,7 +151,6 @@ def get_max_available_solar_power_per_bev(available_solar_power_per_bev_in_parki
     return max(available_solar_power_per_bev_in_parking_interval_dict.values())
 
 
-# TODO Abfrage ob Charging Start außerhalb von Ladeintervall ( 8.00 - 16.00 Uhr liegt)
 def get_charging_start(minute_when_max_available_solar_power_per_bev, maximum_charging_time):
     return int(minute_when_max_available_solar_power_per_bev - (maximum_charging_time / 2))
 
@@ -181,8 +175,7 @@ def get_fair_charging_energy(forecast_dict, shortened_charging_interval_as_list)
 
 
 def set_charging_energy_data(simulation_day, id_bev, fair_share_charging_energy, forecast_charging_energy):
-    simulation_day.bevs_dict.add_fair_share_solar_energy(id_bev, fair_share_charging_energy)
-    simulation_day.bevs_dict.add_forecast_solar_energy(id_bev, forecast_charging_energy)
+    simulation_day.bevs_dict.add_fair_share_charging_energy(id_bev, fair_share_charging_energy)
 
 
 def create_charging_interval(charging_interval_as_list):
