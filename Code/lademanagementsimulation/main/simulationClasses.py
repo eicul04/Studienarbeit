@@ -1,5 +1,5 @@
 import timeTransformation
-from simulationService import calculate_new_fueled_solar_energy
+from simulationService import calculate_new_charging_energy
 from enum import Enum
 import random
 
@@ -128,13 +128,16 @@ class BevDictionary:
             self.get_charging_data(id_bev).remove(latest_charging_tuple)
             self.get_charging_data(id_bev).append(new_latest_charging_tuple)
 
-    def set_fueled_charging_energy(self, id_bev, charging_power, minute_interval):
+    def add_fueled_charging_energy(self, id_bev, new_charging_energy):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
         if latest_charging_tuple is not None:
             solar_energy_fueled_so_far = latest_charging_tuple[2]
             latest_charging_tuple_as_list = list(latest_charging_tuple)
-            latest_charging_tuple_as_list[2] = round(calculate_new_fueled_solar_energy(charging_power,
-                                                                                       solar_energy_fueled_so_far, minute_interval), 3)
+            print("For ID BEV", id_bev)
+            print("solar_energy_fueled_so_far: ", solar_energy_fueled_so_far)
+            print("updated with charging energy: ", new_charging_energy)
+            charging_energy_sum = solar_energy_fueled_so_far + new_charging_energy
+            latest_charging_tuple_as_list[2] = charging_energy_sum
             new_latest_charging_tuple = tuple(latest_charging_tuple_as_list)
             self.get_charging_data(id_bev).remove(latest_charging_tuple)
             self.get_charging_data(id_bev).append(new_latest_charging_tuple)

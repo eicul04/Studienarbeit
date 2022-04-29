@@ -8,9 +8,8 @@ def calculate_unused_solar_energy(available_solar_power, minute_interval):
 # Returns Solarenergie in kWh (Ladeleistung * 1/60h)
 # -> Ladeleistung ändert sich ggf. pro Minute, deshalb Solarenergie alle Minute berechnen
 # und auf bisherige aufaddieren
-def calculate_new_fueled_solar_energy(charging_power, solar_energy_fueled_so_far, minute_interval):
-    new_solar_energy = charging_power * (minute_interval / 60)
-    return solar_energy_fueled_so_far + new_solar_energy
+def calculate_new_charging_energy(charging_power, minute_interval):
+    return charging_power * (minute_interval / 60)
 
 
 def calculate_parking_end(parking_start, parking_time):
@@ -48,21 +47,21 @@ def calculate_overflow_of_bevs_charging(number_of_virtual_charging_stations, num
 
 
 def update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval, minute):
-    print("Update fueled solar energy")
     number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
     if number_of_charging_bevs != 0:
         charging_power_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
-        print(charging_power_per_bev, "charging_power_per_bev")
         for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
             charging_time = get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev)
-            print(charging_time, "charging time")
             if charging_time % minute_interval == 0:
-                print("Update Charging energy of BEVs")
-                simulation_day.bevs_dict.set_fueled_charging_energy(id_bev, charging_power_per_bev, minute_interval)
+                print("Update Charging energy of BEVs which were added in interval")
+                new_charging_energy = calculate_new_charging_energy(charging_power_per_bev, minute_interval)
+                simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, new_charging_energy)
             else:
                 print("Update Charging energy of BEVs which came between intervals")
                 charging_interval = charging_time % minute_interval
-                simulation_day.bevs_dict.set_fueled_charging_energy(id_bev, charging_power_per_bev, charging_interval)
+                print("charging interval zur Energie Berechnung: ", charging_interval)
+                new_charging_energy = calculate_new_charging_energy(charging_power_per_bev, charging_interval)
+                simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, new_charging_energy)
 
 
 def update_charging_time(minute, simulation_day):

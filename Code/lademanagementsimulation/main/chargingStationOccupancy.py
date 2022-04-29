@@ -22,7 +22,6 @@ def add_charging_bevs_if_free_charging_stations(available_solar_power, minute, c
             if number_of_unoccupied_charging_stations > 0:
                 number_of_bevs_to_add = number_of_free_charging_stations - number_of_unoccupied_charging_stations
             add_charging_bevs(number_of_bevs_to_add, minute, simulation_day)
-            print("Add charging BEVs")
 
 
 def get_number_of_charging_stations(available_solar_power, charging_power_pro_bev):

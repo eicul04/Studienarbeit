@@ -5,13 +5,13 @@ import numpy as np
 from calculation import calculate_available_solar_power_per_bev
 from chargingStationOccupancy import add_charging_bevs_if_free_charging_stations, update_unused_solar_energy
 from data import get_available_solar_power
-from dataChecks import check_availability_solar_power
 from forecastCalculation import get_available_solar_power_in_parking_interval_dict, calculate_fair_share_charging_energy
 from simulateDay import simulate_day
 from simulationData import safe_bev_dict_per_minute, safe_charging_list_per_minute, safe_bev_dict_per_minute_forecast, \
     safe_available_solar_power_per_bev_per_minute
 from simulationService import update_charging_time, calculate_charging_time, update_fueled_solar_energy, \
-    get_charging_power_per_bev, calculate_unused_solar_energy, safe_unused_solar_energy
+    get_charging_power_per_bev, calculate_unused_solar_energy, safe_unused_solar_energy, \
+    calculate_new_charging_energy
 
 
 def start_simulation(solar_peak_power, charging_power_pro_bev,
@@ -80,8 +80,8 @@ def update_charging_bevs_for_next_interval(available_solar_power, minute, chargi
 
 # TODO hier statt stufen funktion Mitte vom Interval nehmen
 def update_residual_charging_time(simulation_day, solar_peak_power, minute, minute_interval, simulation_data):
+    print("Charging BEV Liste vor residual berechnung: ", simulation_day.charging_bevs_list.get_charging_bevs_list())
     for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
-        print("Charging BEV Liste vor residual berechnung: ", simulation_day.charging_bevs_list.get_charging_bevs_list())
         already_fueled_charging_energy = simulation_day.bevs_dict.get_fueled_charging_energy(id_bev)
         fair_share_charging_energy = simulation_day.bevs_dict.get_fair_share_charging_energy(id_bev)
         residual_charging_energy = get_residual_charging_energy(already_fueled_charging_energy, fair_share_charging_energy)
@@ -129,7 +129,9 @@ def set_bev_data(residual_charging_time, id_bev, simulation_day, minute, solar_p
     final_charging_time = charging_end - charging_start
     simulation_day.bevs_dict.set_charging_time(id_bev, final_charging_time)
     residual_solar_energy_till_charging_end = solar_power_per_bev_for_next_interval * (residual_charging_time/60)
-    simulation_day.bevs_dict.set_fueled_charging_energy(id_bev, residual_solar_energy_till_charging_end, minute_interval)
+    print("Residual charging_time: ", residual_charging_time)
+    print("residual_solar_energy_till_charging_end: ", residual_solar_energy_till_charging_end)
+    simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, residual_solar_energy_till_charging_end)
 
 
 def stop_charging(id_bev, simulation_day):
@@ -151,7 +153,8 @@ def start_charging_of_new_bev(simulation_day, minute, residual_charging_time, so
             number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
             remaining_charging_power_per_bev = solar_power_per_bev_for_next_interval / number_of_charging_bevs
             charging_interval = residual_charging_time
-            simulation_day.bevs_dict.set_fueled_charging_energy(id_bev, remaining_charging_power_per_bev, charging_interval)
+            new_charging_energy = calculate_new_charging_energy(remaining_charging_power_per_bev, charging_interval)
+            simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, new_charging_energy)
     else:
         unused_solar_energy_interval = residual_charging_time
         unused_solar_power = get_available_solar_power(solar_peak_power, minute)
