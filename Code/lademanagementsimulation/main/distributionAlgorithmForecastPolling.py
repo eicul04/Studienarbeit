@@ -44,7 +44,6 @@ def start_simulation(solar_peak_power, charging_power_pro_bev,
             number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
             available_solar_power = get_available_solar_power(solar_peak_power, minute)
             charging_power_real_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
-            print("minute before saving", minute)
             bev_data.add_charging_power_per_bev_per_minute_dict(id_bev, minute, charging_power_real_per_bev)
         safe_charging_list_per_minute(simulation_day, simulation_data, minute)
     # das auch noch das Intervall bis 960 abgedeckt ist

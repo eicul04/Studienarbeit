@@ -40,8 +40,6 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
     ladestrom_bev_fig.update_xaxes(range=[480, 960], showgrid=True)
     ladestrom_bev_fig.update_yaxes(range=[0, 60])
 
-    # ladestrom_bev_fig.update_shapes(dict(xref='x', yref='y'))
-
     ladestrom_bev_fig.add_scatter(x=df_available_solar_energy['Minuten'],
                                   y=df_available_solar_energy['Verfügbare Solarleistung'],
                                   line_color='orange', name='Verfügbare Solarleistung')
@@ -64,7 +62,7 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
                                           index=[minutes_for_id_bev[0], minutes_for_id_bev[-1]])
 
         df_bev = df_bev.append(df_bev_zero_values)
-        df_bev.index = df_bev.index + 1  # shifting index
+        df_bev.index = df_bev.index + 0  # shifting index
         df_bev = df_bev.sort_index()
         print("Dataframe for BEV with ID: ", id_bev)
         print(df_bev)

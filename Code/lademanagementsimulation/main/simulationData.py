@@ -65,7 +65,6 @@ class BevData:
 
     def add_charging_power_per_bev_per_minute_dict(self, id_bev, minute, charging_power_for_bev_for_minute):
         if id_bev in self.charging_power_per_bev_per_minute_dict:
-            print("Minute while saving: ", minute)
             self.charging_power_per_bev_per_minute_dict[id_bev][minute] = charging_power_for_bev_for_minute
         else:
             self.charging_power_per_bev_per_minute_dict[id_bev] = {}
