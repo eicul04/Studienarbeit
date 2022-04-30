@@ -15,13 +15,13 @@ def update_waiting_bevs(minute, simulation_day):
 
 
 def update_because_parking_time_over(current_minute, simulation_day):
-    update_parking_time_in_waiting_bevs_list(current_minute, simulation_day.waiting_bevs_list,
-                                             simulation_day)
-    update_parking_time_in_charging_bevs_list(current_minute, simulation_day.charging_bevs_list,
-                                              simulation_day)
+    update_bevs_in_waiting_bevs_list(current_minute, simulation_day.waiting_bevs_list,
+                                     simulation_day)
+    update_bevs_in_charging_bevs_list(current_minute, simulation_day.charging_bevs_list,
+                                      simulation_day)
 
 
-def update_parking_time_in_waiting_bevs_list(current_minute, waiting_bevs_list, simulation_day):
+def update_bevs_in_waiting_bevs_list(current_minute, waiting_bevs_list, simulation_day):
     for id_bev in waiting_bevs_list.get_waiting_bevs_list():
         parking_end = calculate_parking_end(simulation_day.bevs_dict.get_parking_start(id_bev),
                                             simulation_day.bevs_dict.get_parking_time(id_bev))
@@ -30,7 +30,7 @@ def update_parking_time_in_waiting_bevs_list(current_minute, waiting_bevs_list, 
     simulation_day.remove_from_list(waiting_bevs_list)
 
 
-def update_parking_time_in_charging_bevs_list(current_minute, charging_bevs_list, simulation_day):
+def update_bevs_in_charging_bevs_list(current_minute, charging_bevs_list, simulation_day):
     for id_bev in charging_bevs_list.get_charging_bevs_list():
         parking_end = calculate_parking_end(simulation_day.bevs_dict.get_parking_start(id_bev),
                                             simulation_day.bevs_dict.get_parking_time(id_bev))
