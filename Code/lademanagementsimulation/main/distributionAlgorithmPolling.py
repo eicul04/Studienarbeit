@@ -10,6 +10,7 @@ from simulationService import calculate_charging_time, calculate_overflow_of_bev
 import numpy as np
 import dataChecks
 import data
+from timeTransformation import in_minutes
 
 
 class Algorithm(Enum):
@@ -39,7 +40,8 @@ def update_charging_bevs(solar_peak_power, minute, max_charging_time,
         available_solar_power = data.get_available_solar_power(solar_peak_power, minute)
         add_charging_bevs_if_free_charging_stations(available_solar_power, minute, charging_power_pro_bev, simulation_day,
                                                 bev_data, simulation_data, minute_interval, solar_peak_power)
-        update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval, minute)
+        available_solar_power_last_interval = data.get_available_solar_power(solar_peak_power, minute - minute_interval)
+        update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute, simulation_data)
 
 
 def update_because_charging_time_over(current_minute, max_charging_time, simulation_day, algorithm_module):

@@ -133,7 +133,6 @@ def safe_bev_dict_per_minute(minute, simulation_day, bev_data, table_dict, solar
 
 def safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, solar_peak_power):
     current_bevs_dict = copy.deepcopy(simulation_day.bevs_dict)
-    print("Current_bevs_dict", current_bevs_dict.get_bevs_dict())
     bev_data.add_bev_data_per_minute_dict(minute, current_bevs_dict)
     bev_dict_specific_minute = bev_data.get_bev_data_per_minute_dict(minute)
     current_table = create_plotly_table_forecast(bev_dict_specific_minute, solar_peak_power,

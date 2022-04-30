@@ -1,5 +1,7 @@
 import copy
 
+from timeTransformation import in_minutes
+
 
 def calculate_unused_solar_energy(available_solar_power, minute_interval):
     return available_solar_power * (minute_interval / 60)
