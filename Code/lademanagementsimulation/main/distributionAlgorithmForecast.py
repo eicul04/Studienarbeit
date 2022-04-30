@@ -5,7 +5,7 @@ import numpy as np
 
 from data import get_available_solar_power
 from forecastCalculation import get_parking_start, get_parking_end, get_available_solar_power_in_parking_interval_dict, \
-    calculate_fair_share_charging_energy
+    calculate_fair_share_charging_energy, get_parking_interval_in_minutes_as_list
 from simulateDay import simulate_day
 from simulationData import safe_charging_list_per_minute, safe_bev_dict_per_minute_forecast
 from simulationService import calculate_parking_end, calculate_number_of_charging_stations, calculate_charging_end, \
@@ -114,14 +114,6 @@ def set_initial_charging_times(simulation_day, id_bev, fair_share, forecast_dict
     else:
         print("No charging slot available")
         bev_data.increase_number_of_bev_with_no_charging_slot_in_forecast()
-        # TODO Was machen wenn kein charging slot frei?
-
-
-# TODO delete 1. Ansatz um Maximum rumtanken?
-# minute_when_max_available_solar_power_per_bev = get_minute_when_max_available_solar_power_per_bev(
-#  available_solar_power_per_bev_in_parking_interval_dict)
-# charging_start = get_charging_start(minute_when_max_available_solar_power_per_bev, maximum_charging_time)
-# charging_end = get_charging_end(minute_when_max_available_solar_power_per_bev, maximum_charging_time)
 
 
 def shorten_charging_interval_if_more_than_fair_share(highest_charging_energy,
@@ -160,7 +152,6 @@ def get_charging_end(minute_when_max_available_solar_power_per_bev, maximum_char
     return int(minute_when_max_available_solar_power_per_bev + (maximum_charging_time / 2))
 
 
-# TODO Abfrage, das maximal so viele in charging intervall wie available_charging_stations
 def set_charging_data(id_bev, simulation_day, charging_start, charging_end):
     charging_time = charging_end - charging_start
     simulation_day.bevs_dict.add_charging_data_for_forecast(id_bev, charging_start, charging_time)

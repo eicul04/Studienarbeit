@@ -197,9 +197,10 @@ def set_bev_data_after_charging_time_over(residual_charging_time, id_bev, simula
     # * number_of_charging_bevs damit Wert in Diagramm gestapelt wird
     number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
     bev_data.add_charging_power_per_bev_per_minute_dict(id_bev, charging_end,
-                                                        solar_power_per_bev_for_next_interval * number_of_charging_bevs)
+                                                        solar_power_per_bev_for_next_interval)
 
 
+# TODO solar power bei Abbruch korrekt berechnen
 def set_bev_data_after_parking_time_over(id_bev, simulation_day, solar_power_per_bev_for_next_interval,
                                          residual_parking_time, minute, bev_data, solar_peak_power):
     residual_solar_energy_till_parking_end = solar_power_per_bev_for_next_interval * (residual_parking_time / 60)
@@ -212,7 +213,7 @@ def set_bev_data_after_parking_time_over(id_bev, simulation_day, solar_power_per
     # * number_of_charging_bevs damit Wert in Diagramm gestapelt wird
     number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
     bev_data.add_charging_power_per_bev_per_minute_dict(id_bev, charging_end,
-                                                        solar_power_per_bev_for_next_interval * number_of_charging_bevs)
+                                                        solar_power_per_bev_for_next_interval)
 
 
 def stop_charging(id_bev, simulation_day):
@@ -241,7 +242,7 @@ def start_charging_of_new_bev(simulation_day, minute, residual_time, solar_peak_
         # TODO hier berechnen wie hoch charging_power für Darstellung sein muss ?!
         # * number_of_charging_bevs damit Wert in Diagramm gestapelt wird
         bev_data.add_charging_power_per_bev_per_minute_dict(chosen_bev_to_start_charging, charging_start,
-                                                            solar_power_per_bev_for_next_interval * number_of_charging_bevs)
+                                                            solar_power_per_bev_for_next_interval)
     elif chosen_bev_to_start_charging is None and number_of_charging_bevs != 0:
         for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
             remaining_charging_power_per_bev = solar_power_per_bev_for_next_interval / number_of_charging_bevs
