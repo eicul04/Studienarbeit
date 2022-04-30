@@ -144,10 +144,10 @@ def safe_waiting_list_per_minute(simulation_day, simulation_data, minute):
     simulation_data.add_waiting_list_to_dict(minute, waiting_list)
 
 
-def safe_available_solar_power_per_bev_per_minute(simulation_data, minute, solar_peak_power):
+def safe_available_solar_power_per_bev_per_minute(simulation_data, minute, solar_peak_power, minute_interval):
     number_of_waiting_bevs = len(simulation_data.waiting_list_per_minute_dict[minute])
     available_solar_power_per_minute = calculate_available_solar_power_per_bev(solar_peak_power, number_of_waiting_bevs,
-                                                                               minute)
+                                                                               minute, minute_interval)
     simulation_data.add_available_solar_power_per_bev_to_dict(minute, available_solar_power_per_minute)
 
 

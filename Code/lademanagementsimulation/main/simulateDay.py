@@ -4,9 +4,9 @@ from simulationService import calculate_parking_end
 from timeTransformation import in_minutes
 
 
-def simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data):
+def simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data, minute_interval):
     update_waiting_bevs(minute, simulation_day)
-    safe_simulation_day_state(minute, simulation_day, bev_data, table_dict, solar_peak_power, simulation_data)
+    safe_simulation_day_state(minute, simulation_day, bev_data, table_dict, solar_peak_power, simulation_data, minute_interval)
 
 
 def update_waiting_bevs(minute, simulation_day):
@@ -39,9 +39,9 @@ def update_bevs_in_charging_bevs_list(current_minute, charging_bevs_list, simula
     simulation_day.remove_from_list(charging_bevs_list)
 
 
-def safe_simulation_day_state(minute, simulation_day, bev_data, table_dict, solar_peak_power, simulation_data):
+def safe_simulation_day_state(minute, simulation_day, bev_data, table_dict, solar_peak_power, simulation_data, minute_interval):
     safe_waiting_list_per_minute(simulation_day, simulation_data, minute)
-    safe_available_solar_power_per_bev_per_minute(simulation_data, minute, solar_peak_power)
+    safe_available_solar_power_per_bev_per_minute(simulation_data, minute, solar_peak_power, minute_interval)
 
 
 

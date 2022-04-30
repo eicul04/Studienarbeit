@@ -5,9 +5,9 @@ from simulationService import calculate_parking_end
 from timeTransformation import in_minutes
 
 
-def simulate_day_forecast(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data):
+def simulate_day_forecast(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data, minute_interval):
     update_waiting_bevs_forecast(minute, simulation_day)
-    safe_simulation_day_state(minute, simulation_day, bev_data, table_dict, solar_peak_power, simulation_data)
+    safe_simulation_day_state(minute, simulation_day, bev_data, table_dict, solar_peak_power, simulation_data, minute_interval)
 
 
 def update_waiting_bevs_forecast(minute, simulation_day):

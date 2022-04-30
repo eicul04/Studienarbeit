@@ -83,6 +83,7 @@ def get_available_solar_power(solar_peak_power, minute):
 def get_available_solar_power_in_minute_interval_start(solar_peak_power, minute):
     return calculation.get_available_solar_power_linear_interpolated(solar_peak_power, minute)
 
+
 def get_available_solar_energy(solar_peak_power, minute):
     available_solar_power = get_available_solar_power(solar_peak_power, minute)
     return available_solar_power * (1/60)
