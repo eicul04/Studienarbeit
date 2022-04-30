@@ -11,8 +11,8 @@ def print_algorithm_result(bev_data, simulation_data, anzahl_bevs_pro_tag):
     number_of_interrupted_charging_processes = bev_data.get_number_of_interrupted_charging_processes()
     total_number_of_unused_solar_energy = simulation_data.get_total_number_of_unused_solar_energy()
     return md(
-        ">**Ergebnis**<br>Geladene BEVs: {} von {}<br>Unterbrochene Aufladevorgänge {}<br>Aufgeladene Solarenergie insgesamt: {} kWh<br>Ungenutzte Solarenergie insgesamt: {} kWh".format(
-            total_number_of_charged_bevs, anzahl_bevs_pro_tag, number_of_interrupted_charging_processes,
+        ">**Ergebnis**<br>Geladene BEVs: {} von {}<br>Aufgeladene Solarenergie insgesamt: {} kWh<br>Ungenutzte Solarenergie insgesamt: {} kWh".format(
+            total_number_of_charged_bevs, anzahl_bevs_pro_tag,
             total_number_of_fueled_solar_energy, total_number_of_unused_solar_energy))
 
 

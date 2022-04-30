@@ -213,11 +213,25 @@ class SimulationDay:
         self.already_charged_bevs_list = AlreadyChargedBevsList()
         self.bevs_dict = BevDictionary(number_bevs_per_day)
         self.bevs_to_remove = set()
+        self.bevs_to_add_to_charging_list = []
 
     def start_charging(self, id_bev):
         self.charging_bevs_list.add_bev(id_bev)
         self.waiting_bevs_list.remove_bev(id_bev)
         self.bevs_dict.set_parking_state(id_bev, ParkingState.CHARGING)
+
+    def prepare_charging_between_intervals(self, id_bev):
+        self.waiting_bevs_list.remove_bev(id_bev)
+        self.bevs_dict.set_parking_state(id_bev, ParkingState.CHARGING)
+        self.bevs_to_add_to_charging_list.append(id_bev)
+
+    def start_charging_between_intervals(self):
+        for id_bev in self.bevs_to_add_to_charging_list:
+            self.charging_bevs_list.add_bev(id_bev)
+        self.bevs_to_add_to_charging_list = []
+
+    def stop_charging_between_intervals(self):
+        self.remove_from_list(self.charging_bevs_list)
 
     def init_charging_data(self, id_bev, current_minute):
         self.bevs_dict.add_charging_data(id_bev, current_minute)
