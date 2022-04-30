@@ -58,13 +58,10 @@ def update_fueled_solar_energy(available_solar_power_last_interval, simulation_d
             for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
                 charging_time = get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev)
                 if charging_time % minute_interval == 0:
-                    print("Update Charging energy of BEVs which were added in interval")
                     new_charging_energy = calculate_new_charging_energy(charging_power_per_bev, minute_interval)
                     simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, new_charging_energy)
                 else:
-                    print("Update Charging energy of BEVs which came between intervals")
                     charging_interval = charging_time % minute_interval
-                    print("charging interval zur Energie Berechnung: ", charging_interval)
                     new_charging_energy = calculate_new_charging_energy(charging_power_per_bev, charging_interval)
                     simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, new_charging_energy)
 

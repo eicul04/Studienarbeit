@@ -8,6 +8,7 @@ def add_charging_bevs_if_free_charging_stations(available_solar_power, minute, c
                                                 bev_data, simulation_data, minute_interval, solar_peak_power):
     number_of_charging_stations = get_number_of_charging_stations(available_solar_power,
                                                                   charging_power_pro_bev)
+    print("New calculated number of charging stations: ", number_of_charging_stations)
     number_of_charging_bevs = get_number_of_charging_bevs(simulation_day)
     number_of_free_charging_stations = get_number_of_available_charging_stations(
         number_of_charging_stations, number_of_charging_bevs)

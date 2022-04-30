@@ -133,9 +133,6 @@ class BevDictionary:
         if latest_charging_tuple is not None:
             solar_energy_fueled_so_far = latest_charging_tuple[2]
             latest_charging_tuple_as_list = list(latest_charging_tuple)
-            print("For ID BEV", id_bev)
-            print("solar_energy_fueled_so_far: ", solar_energy_fueled_so_far)
-            print("updated with charging energy: ", new_charging_energy)
             charging_energy_sum = solar_energy_fueled_so_far + new_charging_energy
             latest_charging_tuple_as_list[2] = charging_energy_sum
             new_latest_charging_tuple = tuple(latest_charging_tuple_as_list)

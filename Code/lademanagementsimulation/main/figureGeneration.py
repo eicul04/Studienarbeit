@@ -30,10 +30,11 @@ def get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_
 def create_charging_power_figure(simulation_day, solar_peak_power, bev_data, minute_interval):
     df_available_solar_power = data.get_available_solar_power_dataframe_linear_interpolated(solar_peak_power, minute_interval)
     charging_power_per_bev_per_minute_dict = bev_data.charging_power_per_bev_per_minute_dict
-    generate_charging_power_figure(df_available_solar_power, charging_power_per_bev_per_minute_dict)
+    print("charging_power_per_bev_per_minute_dict", charging_power_per_bev_per_minute_dict)
+    generate_charging_power_figure(df_available_solar_power, charging_power_per_bev_per_minute_dict, minute_interval)
 
 
-def generate_charging_power_figure(df_available_solar_energy, charging_power_per_bev_per_minute_dict):
+def generate_charging_power_figure(df_available_solar_energy, charging_power_per_bev_per_minute_dict, minute_interval):
     global ladestrom_bev_fig
 
     # Set axes properties
@@ -45,7 +46,7 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
                                   line_color='orange', name='Verfügbare Solarleistung')
 
     charging_power_per_bev_per_minute_dict_manipulated_for_visualisation = \
-        manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict)
+        manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict, minute_interval)
     print(charging_power_per_bev_per_minute_dict_manipulated_for_visualisation,
           "charging_power_per_bev_per_minute_dict_manipulated_for_visualisation")
     for id_bev, charging_power_per_minute in charging_power_per_bev_per_minute_dict_manipulated_for_visualisation.items():
@@ -79,11 +80,12 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
     ladestrom_bev_fig.show()
 
 
-def manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict):
+def manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict, minute_interval):
     previous_sums = defaultdict(int)
 
     for id_bev, charging_power_per_minute in charging_power_per_bev_per_minute_dict.items():
         for minute in charging_power_per_minute.keys():
+            minute_for_comparing = minute - (minute % minute_interval)
             charging_power_per_minute[minute] += previous_sums[minute]
             previous_sums[minute] = charging_power_per_minute[minute]
 
