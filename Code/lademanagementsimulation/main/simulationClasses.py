@@ -68,6 +68,10 @@ class BevDictionary:
     def get_parking_time(self, id_bev):
         return self.get_parking_data(id_bev)[1]
 
+    def get_parking_end_in_minutes(self, id_bev):
+        return timeTransformation.in_minutes(self.get_parking_start(id_bev)) + timeTransformation.in_minutes(
+            self.get_parking_time(id_bev))
+
     def get_parking_data(self, id_bev):
         bev_data = self.bevs_dict[id_bev]
         return bev_data[0]
