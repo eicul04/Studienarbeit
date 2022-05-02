@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from data import get_available_solar_power
+from calculation import get_available_solar_power_linear_interpolated
 from forecastCalculation import get_parking_start, get_parking_end, get_available_solar_power_in_parking_interval_dict, \
     calculate_fair_share_charging_energy, get_parking_interval_in_minutes_as_list
 from simulateDay import simulate_day
@@ -25,22 +25,23 @@ from simulationService import calculate_parking_end, calculate_number_of_chargin
 # SimulationDataReal = SimulationDataPrognose + Störfunktion
 
 
+
+
 def start_algorithm(simulation_data, simulation_day, maximum_charging_time, solar_peak_power,
                     bev_data, table_dict, charging_power_per_bev, minute_interval):
     day_in_minute_interval_steps = list(np.around(np.arange(480, 960 + 1, minute_interval), 1))
     for minute in day_in_minute_interval_steps:
-        init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data, minute_interval)
+        available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power, minute)
+        init_simulation_data(minute, simulation_day, available_solar_power, simulation_data)
     simulation_day.reset_simulation_day()
     determine_charging_distribution(charging_power_per_bev, maximum_charging_time, simulation_data, simulation_day,
                                     solar_peak_power, minute_interval, bev_data)
-    # update charging_times bei Veränderungen zum ursprünglichen Plan (bevs_dict Parkzeiten)
-    # update immer für wartende und noch nicht parkende autos
     for minute in day_in_minute_interval_steps:
-        simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data, minute_interval)
+        available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power, minute)
+        simulate_day(minute, simulation_day, simulation_data, available_solar_power)
         # TODO Tabellenerzeugung (fig nach hinten anschieben)
-        safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, solar_peak_power)
+        safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, available_solar_power)
         update_charging_bevs(minute, simulation_day)
-        available_solar_power = get_available_solar_power(solar_peak_power, minute)
         if minute != 480:
             update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval, minute, simulation_data)
         for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
@@ -90,8 +91,8 @@ def determine_charging_distribution(charging_power_per_bev, maximum_charging_tim
         set_initial_charging_times(simulation_day, id_bev, fair_share, forecast_dict, bev_data)
 
 
-def init_simulation_data(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data, minute_interval):
-    simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data, minute_interval)
+def init_simulation_data(minute, simulation_day, available_solar_power, simulation_data):
+    simulate_day(minute, simulation_day, simulation_data, available_solar_power)
 
 
 def set_initial_charging_times(simulation_day, id_bev, fair_share, forecast_dict, bev_data):

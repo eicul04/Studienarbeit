@@ -29,12 +29,15 @@ def calculate_available_solar_power_course(df_solar_power, df_electricity_own_co
     return df_available_solar_power
 
 
-def calculate_available_solar_power_per_bev(solar_peak_power, number_of_bevs, minute, minute_interval):
-    available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power, minute + minute_interval/2)
+def calculate_available_solar_power_per_bev(available_solar_power, number_of_bevs):
     if number_of_bevs != 0:
         return available_solar_power / number_of_bevs
     else:
         return 0
+
+
+def transform_to_solar_energy(available_solar_power):
+    return available_solar_power * (1 / 60)
 
 
 def get_available_solar_power_quadratic_interpolated(solar_peak_power, minute):

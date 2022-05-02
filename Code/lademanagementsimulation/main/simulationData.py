@@ -3,7 +3,7 @@ import copy
 import plotly.graph_objects as go
 
 import data
-from calculation import calculate_available_solar_power_per_bev
+from calculation import calculate_available_solar_power_per_bev, get_available_solar_power_linear_interpolated
 from simulationService import calculate_unused_solar_energy
 from timeTransformation import as_time_of_day_from_hour, as_time_of_day_from_minute
 
@@ -130,12 +130,11 @@ def safe_bev_dict_per_minute(minute, simulation_day, bev_data, table_dict, solar
     table_dict.add_table(minute, current_table)
 
 
-def safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, solar_peak_power):
+def safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, available_solar_power):
     current_bevs_dict = copy.deepcopy(simulation_day.bevs_dict)
     bev_data.add_bev_data_per_minute_dict(minute, current_bevs_dict)
     bev_dict_specific_minute = bev_data.get_bev_data_per_minute_dict(minute)
-    current_table = create_plotly_table_forecast(bev_dict_specific_minute, solar_peak_power,
-                                        minute)
+    current_table = create_plotly_table_forecast(bev_dict_specific_minute, available_solar_power)
     table_dict.add_table(minute, current_table)
 
 
@@ -144,10 +143,9 @@ def safe_waiting_list_per_minute(simulation_day, simulation_data, minute):
     simulation_data.add_waiting_list_to_dict(minute, waiting_list)
 
 
-def safe_available_solar_power_per_bev_per_minute(simulation_data, minute, solar_peak_power, minute_interval):
+def safe_available_solar_power_per_bev_per_minute(simulation_data, minute, available_solar_power):
     number_of_waiting_bevs = len(simulation_data.waiting_list_per_minute_dict[minute])
-    available_solar_power_per_minute = calculate_available_solar_power_per_bev(solar_peak_power, number_of_waiting_bevs,
-                                                                               minute, minute_interval)
+    available_solar_power_per_minute = calculate_available_solar_power_per_bev(available_solar_power, number_of_waiting_bevs)
     simulation_data.add_available_solar_power_per_bev_to_dict(minute, available_solar_power_per_minute)
 
 
@@ -197,7 +195,7 @@ def create_plotly_table(bev_dict_specific_minute, solar_peak_power, minute):
         charging_start.append(charging_tuple_start)
         charging_time.append(charging_tuple_time)
 
-    available_solar_power = data.get_available_solar_power(solar_peak_power, minute)
+    available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power, minute)
 
     fig = go.Figure(
         data=[go.Table(header=dict(values=['ID BEV', 'Zustand', 'Parkstart', 'Parkdauer in h', 'Anzahl Aufladungen',
@@ -222,7 +220,7 @@ def create_plotly_table(bev_dict_specific_minute, solar_peak_power, minute):
     return fig
 
 
-def create_plotly_table_forecast(bev_dict_specific_minute, solar_peak_power, minute):
+def create_plotly_table_forecast(bev_dict_specific_minute, available_solar_power):
     parking_states = []
     parking_starts = []
     parking_duration = []
@@ -249,8 +247,6 @@ def create_plotly_table_forecast(bev_dict_specific_minute, solar_peak_power, min
         fueled_solar_energy.append(round(fueled_solar_energy_sum, 2))
         charging_start.append(charging_tuple_start)
         charging_time.append(charging_tuple_time)
-
-    available_solar_power = data.get_available_solar_power(solar_peak_power, minute)
 
     fig = go.Figure(
         data=[go.Table(header=dict(values=['ID BEV', 'Zustand', 'Parkstart', 'Parkdauer in h', 'Ladestart',
