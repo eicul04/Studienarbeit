@@ -3,8 +3,8 @@ from collections import OrderedDict
 import numpy as np
 
 from calculation import calculate_available_solar_power_per_bev, get_available_solar_power_linear_interpolated
-from chargingStationOccupancy import check_if_free_charging_stations, update_unused_solar_energy, \
-    add_charging_bevs_if_free_charging_stations, update_unused_solar_energy_if_no_new_bevs_for_charging
+from chargingStationOccupancy import add_charging_bevs_if_free_charging_stations, \
+    update_unused_solar_energy_if_no_new_bevs_for_charging
 from forecastCalculation import get_available_solar_power_in_parking_interval_dict, calculate_fair_share_charging_energy
 from simulateDay import simulate_day
 from simulateDayForecast import simulate_day_forecast
@@ -211,8 +211,6 @@ def set_bev_data_after_charging_time_over(residual_charging_time, id_bev, simula
     simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, residual_solar_energy_till_charging_end)
     save_charging_power_per_bev_for_current_minute(simulation_day, solar_peak_power, minute, id_bev, bev_data,
                                                    minute_interval)
-    # * number_of_charging_bevs damit Wert in Diagramm gestapelt wird
-    number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
     bev_data.add_charging_power_per_bev_per_minute_dict(id_bev, charging_end,
                                                         solar_power_per_bev_for_next_interval)
 

@@ -23,20 +23,26 @@ from timeTransformation import in_minutes
 def start_post_optimization(minute_interval, simulation_day, solar_peak_power, bev_data, table_dict, simulation_data,
                             charging_power_pro_bev):
     print("START POST OPTIMIZATION")
+    simulation_day.reset_simulation_day()
+    if_parking_end_out_of_simulation_set_to_interval_max(simulation_day)
+    print(simulation_day.bevs_dict.get_bevs_dict())
+    print("Waiting BEV list: ", simulation_day.waiting_bevs_list.get_waiting_bevs_list())
     day_in_minute_interval_steps = list(reversed(range(480, 960 + 1, minute_interval)))
+    print(day_in_minute_interval_steps)
     for minute in day_in_minute_interval_steps:
         print("\n")
         print("Minute: ", minute)
         simulation_day.start_charging_between_intervals()
         simulation_day.stop_charging_between_intervals()
         add_bevs_to_waiting_list_if_parking_end_equals_current_minute(simulation_day, minute)
+        print("Waiting BEVs (after updating new waiting BEVs): ", simulation_day.waiting_bevs_list.get_waiting_bevs_list())
         available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power,
                                                                               minute - minute_interval / 2)
         update_because_parking_time_over(minute, simulation_day, available_solar_power, simulation_data)
         print("Charging BEVs: ", simulation_day.charging_bevs_list.get_charging_bevs_list())
         print("Waiting BEVs: ", simulation_day.waiting_bevs_list.get_waiting_bevs_list())
         available_solar_power_last_interval = get_available_solar_power_linear_interpolated(solar_peak_power, minute + minute_interval / 2)
-        if minute != 960:
+        if minute > 480:
             update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute,
                                        simulation_data)
             update_charging_time(minute, simulation_day)
@@ -48,12 +54,27 @@ def start_post_optimization(minute_interval, simulation_day, solar_peak_power, b
             residual_parking_time = parking_start - minute
             update_currently_charging_bevs(residual_parking_time, simulation_day, solar_peak_power, minute,
                                            minute_interval, simulation_data, bev_data,
-                                           available_solar_power)
+                                           available_solar_power, id_bev)
         print("Charging BEVs: ", simulation_day.charging_bevs_list.get_charging_bevs_list())
         safe_charging_list_per_minute(simulation_day, simulation_data, minute)
         safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, available_solar_power)
     print("OPTIMIZATION DONE")
     print("BEVs dict: ", simulation_day.bevs_dict.get_bevs_dict())
+
+
+def if_parking_end_out_of_simulation_set_to_interval_max(simulation_day):
+    for id_bev in simulation_day.bevs_dict.get_bevs_dict().keys():
+        parking_end = simulation_day.bevs_dict.get_parking_end_in_minutes(id_bev)
+        if check_if_parking_end_out_of_simulation(parking_end):
+            parking_start = simulation_day.bevs_dict.get_parking_start(id_bev)
+            parking_time = 960 / 60 - parking_start
+            simulation_day.bevs_dict.set_parking_time(id_bev, parking_time)
+
+
+def check_if_parking_end_out_of_simulation(parking_end):
+    if parking_end > 960:
+        return True
+    return False
 
 
 def update_charging_time(minute, simulation_day):
@@ -88,8 +109,8 @@ def update_because_parking_time_over(minute, simulation_day, available_solar_pow
 # TODO Methode auf parking_start anpassen
 def update_bevs_in_waiting_bevs_list(current_minute, waiting_bevs_list, simulation_day):
     for id_bev in waiting_bevs_list.get_waiting_bevs_list():
-        parking_start = in_minutes(simulation_day.bevs_dict.get_parking_start(id_bev))
-        if parking_start <= current_minute:
+        parking_start = simulation_day.bevs_dict.get_parking_start_in_minutes(id_bev)
+        if parking_start >= current_minute:
             print("STOP PARKING BEV {} from waiting list".format(id_bev))
             simulation_day.stop_parking(id_bev)
     simulation_day.remove_from_list(waiting_bevs_list)

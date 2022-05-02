@@ -65,6 +65,19 @@ class BevDictionary:
     def get_parking_start(self, id_bev):
         return self.get_parking_data(id_bev)[0]
 
+    def get_parking_start_in_minutes(self, id_bev):
+        return timeTransformation.in_minutes(self.get_parking_data(id_bev)[0])
+
+    def set_parking_start(self, id_bev, parking_start):
+        parking_time = self.get_parking_time(id_bev)
+        new_parking_tuple = (parking_start, parking_time)
+        self.bevs_dict[id_bev][0] = new_parking_tuple
+
+    def set_parking_time(self, id_bev, parking_time):
+        parking_start = self.get_parking_start(id_bev)
+        new_parking_tuple = (parking_start, parking_time)
+        self.bevs_dict[id_bev][0] = new_parking_tuple
+
     def get_parking_time(self, id_bev):
         return self.get_parking_data(id_bev)[1]
 
@@ -235,7 +248,8 @@ class SimulationDay:
         self.bevs_to_add_to_charging_list = []
 
     def stop_charging_between_intervals(self):
-        self.remove_from_list(self.charging_bevs_list)
+        if len(self.charging_bevs_list.get_charging_bevs_list()) != 0:
+            self.remove_from_list(self.charging_bevs_list)
 
     def init_charging_data(self, id_bev, current_minute):
         self.bevs_dict.add_charging_data(id_bev, current_minute)
@@ -260,17 +274,14 @@ class SimulationDay:
         self.reset_parking_states()
         self.waiting_bevs_list = WaitingBevsList()
         self.charging_bevs_list = ChargingBevsList()
+        self.bevs_to_add_to_charging_list = []
 
     def reset_parking_states(self):
         for id_bev in self.bevs_dict.get_bevs_dict():
             self.bevs_dict.set_parking_state(id_bev, ParkingState.NON_PARKING)
-
 
     def add_arriving_waiting_bevs(self, minute):
         for id_bev in self.bevs_dict.get_keys():
             if timeTransformation.in_minutes(self.bevs_dict.get_parking_start(id_bev)) == minute:
                 self.waiting_bevs_list.add_bev(id_bev)
                 self.bevs_dict.set_parking_state(id_bev, ParkingState.WAITING)
-
-
-
