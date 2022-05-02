@@ -24,8 +24,6 @@ from simulationService import calculate_parking_end, calculate_number_of_chargin
 # SimulationData = SimulationDataPrognose
 # SimulationDataReal = SimulationDataPrognose + Störfunktion
 
-from timeTransformation import in_minutes
-
 
 def start_algorithm(simulation_data, simulation_day, maximum_charging_time, solar_peak_power,
                     bev_data, table_dict, charging_power_per_bev, minute_interval):
@@ -38,12 +36,13 @@ def start_algorithm(simulation_data, simulation_day, maximum_charging_time, sola
     # update charging_times bei Veränderungen zum ursprünglichen Plan (bevs_dict Parkzeiten)
     # update immer für wartende und noch nicht parkende autos
     for minute in day_in_minute_interval_steps:
-        simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data)
+        simulate_day(minute, solar_peak_power, simulation_day, bev_data, table_dict, simulation_data, minute_interval)
         # TODO Tabellenerzeugung (fig nach hinten anschieben)
         safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, solar_peak_power)
         update_charging_bevs(minute, simulation_day)
         available_solar_power = get_available_solar_power(solar_peak_power, minute)
-        update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval, minute, simulation_data)
+        if minute != 480:
+            update_fueled_solar_energy(available_solar_power, simulation_day, minute_interval, minute, simulation_data)
         for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
             number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
             charging_power_real_per_bev = get_charging_power_per_bev(available_solar_power, number_of_charging_bevs)
