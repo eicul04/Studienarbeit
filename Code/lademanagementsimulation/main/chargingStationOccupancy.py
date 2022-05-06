@@ -40,15 +40,12 @@ def add_charging_bevs_if_free_charging_stations(available_solar_power, charging_
         number_of_unoccupied_charging_stations = get_number_of_unoccupied_charging_stations(
             number_of_free_charging_stations, number_of_waiting_bevs)
         number_of_bevs_to_add = number_of_free_charging_stations
-        print("NUMBER OF FREE CHARGING STATIONS: ", number_of_free_charging_stations)
         if number_of_unoccupied_charging_stations > 0:
             number_of_bevs_to_add = number_of_free_charging_stations - number_of_unoccupied_charging_stations
         add_charging_bevs(number_of_bevs_to_add, minute, simulation_day)
 
 
 def get_number_of_charging_stations(available_solar_power, charging_power_pro_bev):
-    print("CALCULATE NUMBER OF CHARGING STATIONS")
-    print("Number of charging stations: ", calculate_number_of_charging_stations(available_solar_power, charging_power_pro_bev))
     return calculate_number_of_charging_stations(available_solar_power, charging_power_pro_bev)
 
 

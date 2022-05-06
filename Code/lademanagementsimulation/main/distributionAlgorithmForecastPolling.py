@@ -18,21 +18,16 @@ from simulationService import update_charging_time, update_fueled_solar_energy, 
 # schauen ob charging start gesetzt für aktuelle Zeit
 # und wenn ja in charging Liste hinzufügen
 # Tabelle und Ergebnis Algorithmus anpassen
-# postOptimization darf z.B. kein Einfluss auf Waiting und Charging Diagramm haben, sondern soll nur bevs dict rausgeben
 
 
 def start_simulation(solar_peak_power, charging_power_pro_bev,
                      simulation_day, bev_data, table_dict, simulation_data, minute_interval):
     day_in_minute_interval_steps = list(np.around(np.arange(480, 960 + 1, minute_interval), 1))
-    #init_simulation(day_in_minute_interval_steps, minute_interval, simulation_data, simulation_day, solar_peak_power)
-
-    # TODO hier post optimization einfügen
-    #start_post_optimization(minute_interval, simulation_day, solar_peak_power, bev_data, table_dict, simulation_data,
-            #                charging_power_pro_bev)
 
     for minute in day_in_minute_interval_steps:
         print("\n")
         print("Minute: ", minute)
+        update_charging_bevs_from_post_optimization_plan(minute, simulation_day)
         simulation_day.start_charging_between_intervals()
         simulation_day.stop_charging_between_intervals()
         print("Charging BEVs after updating parking end: ", simulation_day.charging_bevs_list.get_charging_bevs_list())
@@ -72,6 +67,27 @@ def init_simulation(day_in_minute_interval_steps, minute_interval, simulation_da
         init_simulation_data(minute, simulation_day, available_solar_power, simulation_data)
     set_fair_charging_energy(simulation_day, simulation_data, minute_interval)
     simulation_day.reset_simulation_day()
+
+
+# TODO fertig schreiben
+def update_charging_bevs_from_post_optimization_plan(minute, simulation_day):
+    for id_bev in simulation_day.bevs_dict.get_bevs_dict():
+        check_if_bev_charging_start(minute, id_bev, simulation_day)
+        check_if_bev_charging_end(minute, id_bev, simulation_day)
+
+
+def check_if_bev_charging_start(minute, id_bev, simulation_day):
+    charging_start = simulation_day.bevs_dict.get_charging_start(id_bev)
+    if minute >= charging_start:
+        return True
+    return False
+
+
+def check_if_bev_charging_end(minute, id_bev, simulation_day):
+    charging_end = simulation_day.bevs_dict.get_charging_end(id_bev)
+    if minute >= charging_end:
+        return True
+    return False
 
 
 def save_charging_power_per_bev_for_current_minute(simulation_day, solar_peak_power, minute, id_bev, bev_data,

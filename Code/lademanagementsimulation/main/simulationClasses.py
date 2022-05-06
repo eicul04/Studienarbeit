@@ -115,15 +115,25 @@ class BevDictionary:
             self.add_charging_data(id_bev, current_minute)
         else:
             new_charging_tuple = (current_minute, 0, 0)
-            print("OVERWRITE INITIAL CHARGING DATA")
             self.bevs_dict[id_bev][2][0] = new_charging_tuple
-
 
     def get_charging_start(self, id_bev):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
         if latest_charging_tuple is not None:
             return latest_charging_tuple[0]
         return None
+
+    def get_charging_end(self, id_bev):
+        return self.get_charging_start(id_bev) + self.get_charging_time(id_bev)
+
+    def set_charging_start(self, id_bev, new_charging_start):
+        latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
+        if latest_charging_tuple is not None:
+            charging_time = latest_charging_tuple[1]
+            fueled_charging_energy = latest_charging_tuple[2]
+            new_charging_tuple = (new_charging_start, charging_time, fueled_charging_energy)
+            bev_charging_data = self.get_charging_data(id_bev)
+            bev_charging_data[0] = new_charging_tuple
 
     def get_fueled_charging_energy(self, id_bev):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
