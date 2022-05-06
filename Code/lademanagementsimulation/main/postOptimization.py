@@ -51,7 +51,7 @@ def start_post_optimization(minute_interval, simulation_day, solar_peak_power, b
             update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute,
                                        simulation_data)
             # TODO überarbeiten
-            update_charging_time(minute, simulation_day)
+            update_charging_time_optimization(minute, simulation_day)
         update_new_charging_bevs(solar_peak_power, minute, available_solar_power,
                                  charging_power_pro_bev, simulation_day, bev_data,
                                  simulation_data, minute_interval)
@@ -160,7 +160,7 @@ def set_bev_data_after_charging_time_over_optimization(residual_charging_time, i
                                                        solar_peak_power):
     charging_end = minute - residual_charging_time
     charging_start = simulation_day.bevs_dict.get_charging_start(id_bev)
-    final_charging_time = get_final_charging_time(charging_start, charging_end)
+    final_charging_time = get_final_charging_time_optimization(charging_start, charging_end)
     simulation_day.bevs_dict.set_charging_time(id_bev, final_charging_time)
     residual_solar_energy_till_charging_end = solar_power_per_bev_for_next_interval * (residual_charging_time / 60)
     simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, residual_solar_energy_till_charging_end)
@@ -185,20 +185,21 @@ def check_if_parking_end_out_of_simulation(parking_end):
     return False
 
 
-def get_final_charging_time(charging_start, charging_end):
-    return charging_end - charging_start
+def get_final_charging_time_optimization(charging_start, charging_end):
+    return charging_start - charging_end
 
 
-def update_charging_time(minute, simulation_day):
+def update_charging_time_optimization(minute, simulation_day):
     for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
         charging_time = get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev)
         simulation_day.bevs_dict.set_charging_time(id_bev, charging_time)
 
 
 def get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev):
-    parking_end = simulation_day.bevs_dict.get_parking_end_in_minutes(id_bev)
-    if parking_end > minute:
-        return parking_end - minute
+    charging_start = simulation_day.bevs_dict.get_charging_start(id_bev)
+    if charging_start is not None:
+        print("Ladezeit = {} für ID BEV {}".format(charging_start-minute, id_bev))
+        return charging_start - minute
     return 0
 
 
