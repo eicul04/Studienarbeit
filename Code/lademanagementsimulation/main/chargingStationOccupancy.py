@@ -65,7 +65,7 @@ def add_charging_bevs(number_of_bevs_to_add, minute, simulation_day):
     while iterator < number_of_bevs_to_add:
         first_bev_waiting_on_list = simulation_day.waiting_bevs_list.get_first_waiting_bev_of_list()
         simulation_day.start_charging(first_bev_waiting_on_list)
-        simulation_day.init_charging_data(first_bev_waiting_on_list, minute)
+        simulation_day.overwrite_charging_data(first_bev_waiting_on_list, minute)
         iterator += 1
 
 

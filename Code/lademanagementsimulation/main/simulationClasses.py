@@ -110,6 +110,15 @@ class BevDictionary:
             return latest_charging_tuple[1]
         return None
 
+    def set_init_charging_data(self, id_bev, current_minute):
+        if len(self.bevs_dict[id_bev][2]) == 0:
+            self.add_charging_data(id_bev, current_minute)
+        else:
+            new_charging_tuple = (current_minute, 0, 0)
+            print("OVERWRITE INITIAL CHARGING DATA")
+            self.bevs_dict[id_bev][2][0] = new_charging_tuple
+
+
     def get_charging_start(self, id_bev):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
         if latest_charging_tuple is not None:
@@ -253,6 +262,9 @@ class SimulationDay:
 
     def init_charging_data(self, id_bev, current_minute):
         self.bevs_dict.add_charging_data(id_bev, current_minute)
+
+    def overwrite_charging_data(self, id_bev, current_minute):
+        self.bevs_dict.set_init_charging_data(id_bev, current_minute)
 
     def stop_charging(self, id_bev):
         self.bevs_to_remove.add(id_bev)
