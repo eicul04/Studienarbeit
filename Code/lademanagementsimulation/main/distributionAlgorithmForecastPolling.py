@@ -21,12 +21,7 @@ from timeTransformation import in_minutes
 def start_simulation(solar_peak_power, charging_power_pro_bev,
                      simulation_day, bev_data, table_dict, simulation_data, minute_interval):
     day_in_minute_interval_steps = list(np.around(np.arange(480, 960 + 1, minute_interval), 1))
-    for minute in day_in_minute_interval_steps:
-        available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power,
-                                                                              minute + minute_interval / 2)
-        init_simulation_data(minute, simulation_day, available_solar_power, simulation_data)
-    set_fair_charging_energy(simulation_day, simulation_data, minute_interval)
-    simulation_day.reset_simulation_day()
+    init_simulation(day_in_minute_interval_steps, minute_interval, simulation_data, simulation_day, solar_peak_power)
     for minute in day_in_minute_interval_steps:
         print("\n")
         print("Minute: ", minute)
@@ -60,6 +55,15 @@ def start_simulation(solar_peak_power, charging_power_pro_bev,
         safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, available_solar_power)
     # das auch noch das Intervall bis 960 abgedeckt ist
     update_fueled_solar_energy_for_last_interval(solar_peak_power, simulation_day, minute_interval, simulation_data)
+
+
+def init_simulation(day_in_minute_interval_steps, minute_interval, simulation_data, simulation_day, solar_peak_power):
+    for minute in day_in_minute_interval_steps:
+        available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power,
+                                                                              minute + minute_interval / 2)
+        init_simulation_data(minute, simulation_day, available_solar_power, simulation_data)
+    set_fair_charging_energy(simulation_day, simulation_data, minute_interval)
+    simulation_day.reset_simulation_day()
 
 
 def save_charging_power_per_bev_for_current_minute(simulation_day, solar_peak_power, minute, id_bev, bev_data,
