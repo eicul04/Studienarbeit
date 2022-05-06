@@ -6,22 +6,30 @@ from calculation import calculate_available_solar_power_per_bev, get_available_s
 from chargingStationOccupancy import add_charging_bevs_if_free_charging_stations, \
     update_unused_solar_energy_if_no_new_bevs_for_charging
 from forecastCalculation import get_available_solar_power_in_parking_interval_dict, calculate_fair_share_charging_energy
-from simulateDay import simulate_day
 from simulateDayForecast import simulate_day_forecast
-from simulationData import safe_bev_dict_per_minute, safe_charging_list_per_minute, safe_bev_dict_per_minute_forecast, \
-    safe_available_solar_power_per_bev_per_minute
-from simulationService import update_charging_time, calculate_charging_time, update_fueled_solar_energy, \
+from simulationData import safe_charging_list_per_minute, safe_bev_dict_per_minute_forecast
+from simulationService import update_charging_time, update_fueled_solar_energy, \
     get_charging_power_per_bev, calculate_unused_solar_energy, safe_unused_solar_energy, \
     calculate_new_charging_energy, calculate_parking_end, check_if_solar_power_per_bev_for_next_interval_is_not_null, \
     get_residual_charging_time, get_residual_charging_energy, stop_charging, stop_parking, check_if_bev_on_waiting_list, \
     check_if_bev_on_charging_list, check_if_charging_end_less_than_next_interval
-from timeTransformation import in_minutes
+
+# TODO neuer Algorithmus
+# schauen ob charging start gesetzt für aktuelle Zeit
+# und wenn ja in charging Liste hinzufügen
+# Tabelle und Ergebnis Algorithmus anpassen
+# postOptimization darf z.B. kein Einfluss auf Waiting und Charging Diagramm haben, sondern soll nur bevs dict rausgeben
 
 
 def start_simulation(solar_peak_power, charging_power_pro_bev,
                      simulation_day, bev_data, table_dict, simulation_data, minute_interval):
     day_in_minute_interval_steps = list(np.around(np.arange(480, 960 + 1, minute_interval), 1))
-    init_simulation(day_in_minute_interval_steps, minute_interval, simulation_data, simulation_day, solar_peak_power)
+    #init_simulation(day_in_minute_interval_steps, minute_interval, simulation_data, simulation_day, solar_peak_power)
+
+    # TODO hier post optimization einfügen
+    #start_post_optimization(minute_interval, simulation_day, solar_peak_power, bev_data, table_dict, simulation_data,
+            #                charging_power_pro_bev)
+
     for minute in day_in_minute_interval_steps:
         print("\n")
         print("Minute: ", minute)
