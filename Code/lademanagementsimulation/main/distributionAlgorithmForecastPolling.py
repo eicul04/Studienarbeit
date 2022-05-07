@@ -85,14 +85,15 @@ def update_charging_bevs_from_post_optimization_plan(minute, simulation_day, min
             charging_end = simulation_day.bevs_dict.get_charging_end(id_bev)
             residual_charging_time = charging_end - minute
             number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
-            solar_power_per_bev_for_next_interval = calculate_available_solar_power_per_bev(
-                available_solar_power,
-                number_of_charging_bevs)
             if check_if_bev_charging_start_in_minute(minute, charging_start):
                 add_charging_bev_from_optimization_plan(id_bev, simulation_day)
             if check_if_bev_charging_start_in_next_interval(minute, charging_start, minute_interval):
                 simulation_day.bevs_dict.set_parking_state(id_bev, ParkingState.CHARGING)
                 simulation_day.bevs_to_add_to_charging_list.append(id_bev)
+                number_of_charging_bevs += 1
+                solar_power_per_bev_for_next_interval = calculate_available_solar_power_per_bev(
+                    available_solar_power,
+                    number_of_charging_bevs)
                 set_bev_data_for_charging_start_between_intervals(id_bev, simulation_day,
                                                                   solar_power_per_bev_for_next_interval,
                                                                   minute, bev_data, solar_peak_power, minute_interval,
@@ -102,6 +103,9 @@ def update_charging_bevs_from_post_optimization_plan(minute, simulation_day, min
                     stop_charging(id_bev, simulation_day)
             if check_if_bev_charging_end_in_next_interval(residual_charging_time, minute_interval):
                 if id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
+                    solar_power_per_bev_for_next_interval = calculate_available_solar_power_per_bev(
+                        available_solar_power,
+                        number_of_charging_bevs)
                     swap_charging_bevs_because_residual_charging_time_over(residual_charging_time, id_bev,
                                                                            simulation_day,
                                                                            minute,
