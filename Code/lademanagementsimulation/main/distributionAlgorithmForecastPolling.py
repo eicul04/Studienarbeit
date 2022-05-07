@@ -222,7 +222,7 @@ def update_charging_bevs_for_next_interval(available_solar_power, minute, chargi
                                                           number_of_unoccupied_charging_stations)
         add_charging_bevs(number_of_bevs_to_add, minute, simulation_day)
     elif check_if_free_charging_stations(number_of_free_charging_stations) is False and \
-            check_if_new_bevs_for_charging(simulation_day):
+            check_if_new_bevs_for_charging(simulation_day) is False:
         update_unused_solar_energy(solar_peak_power, minute, simulation_data, minute_interval)
 
 
