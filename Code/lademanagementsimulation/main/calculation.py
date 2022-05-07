@@ -62,6 +62,16 @@ def get_available_solar_power_linear_interpolated(solar_peak_power, minute):
     return available_solar_power_interpolated
 
 
+def get_total_number_of_available_solar_energy(solar_peak_power, minute_interval):
+    day_in_minute_interval_steps = list(range(480, 960 + 1, minute_interval))
+    total_number_of_solar_energy = 0
+    for minute in day_in_minute_interval_steps:
+        available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power,
+                                                                              minute + minute_interval / 2)
+        total_number_of_solar_energy += available_solar_power * (minute_interval/60)
+    return round(total_number_of_solar_energy, 2)
+
+
 def quadratic_interpolation_for_timestamp(x_values, y_values, timestamp):
     quadratic_interpolation = sp.interpolate.interp1d(x_values, y_values, kind='quadratic',
                                                       fill_value="extrapolate")
