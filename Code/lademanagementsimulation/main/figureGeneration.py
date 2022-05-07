@@ -134,34 +134,3 @@ def create_bev_number_figure(bev_data):
 
     bev_number_figure.show()
 
-
-def create_available_solar_power_figure_quadratic_interpolation(solar_peak_power):
-    # Get data
-    time_original_in_minutes = transform_to_minutes(
-        data.get_available_solar_power_dataframe(solar_peak_power)['Uhrzeit'])
-    available_solar_power_original = data.get_available_solar_power_dataframe(solar_peak_power)[
-        'Verfügbare Solarleistung']
-
-    # Plot data
-    plt.rcParams["figure.figsize"] = [8.50, 4.00]
-    plt.rcParams["figure.autolayout"] = True
-    fig, graph = plt.subplots()
-    graph.scatter(time_original_in_minutes, available_solar_power_original, c='red', lw=2, label='original datapoints')
-
-    # TODO nicht in Stunden sondern in Minuten konvertieren
-    # Create time_in_minute_steps Datapoints
-    time_in_minute_steps = np.arange(start=time_original_in_minutes.min(), stop=time_original_in_minutes.max() + 1,
-                                     step=1)
-
-    # Quadratic Interpolation
-    quadratic_interpolation = sp.interpolate.interp1d(time_original_in_minutes, available_solar_power_original,
-                                                      kind='quadratic', fill_value="extrapolate")
-    available_solar_power_interpolated = quadratic_interpolation(time_in_minute_steps)
-
-    # Add time_in_minute_steps, vquadratic line to existing plot
-    graph.plot(time_in_minute_steps, available_solar_power_interpolated, color='green', linestyle=':',
-               label='quadratic interpolation')
-    graph.legend(loc='upper left')
-    graph.set_xlabel('Minuten')
-    graph.set_ylabel('Verfügbare Solarleistung in kW')
-    plt.show()
