@@ -79,8 +79,8 @@ def check_if_solar_power_per_bev_for_next_interval_is_not_null(solar_power_per_b
     return False
 
 
-def check_if_charging_end_less_than_next_interval(solar_power_per_bev_for_next_interval, minute_interval,
-                                                  residual_charging_energy, id_bev):
+def check_if_charging_energy_less_than_next_interval(solar_power_per_bev_for_next_interval, minute_interval,
+                                                     residual_charging_energy, id_bev):
     solar_energy_per_bev_for_next_interval = solar_power_per_bev_for_next_interval * (minute_interval / 60)
     if 0 <= residual_charging_energy < solar_energy_per_bev_for_next_interval:
         return True

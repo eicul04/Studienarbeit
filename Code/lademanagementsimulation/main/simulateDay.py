@@ -10,7 +10,9 @@ def simulate_day(minute, simulation_day, simulation_data, available_solar_power)
 
 
 def update_waiting_bevs(minute, simulation_day):
-    simulation_day.add_arriving_waiting_bevs(minute)
+    for id_bev in simulation_day.bevs_dict.get_keys():
+        if simulation_day.bevs_dict.get_parking_start_in_minutes(id_bev) == minute:
+            simulation_day.add_arriving_waiting_bev(id_bev)
     update_because_parking_time_over(minute, simulation_day)
 
 

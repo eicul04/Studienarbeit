@@ -3,7 +3,7 @@ from collections import OrderedDict
 from calculation import get_available_solar_power_linear_interpolated, calculate_available_solar_power_per_bev
 from distributionAlgorithmForecastPolling import get_fair_share_charging_energy, update_new_charging_bevs, \
     update_fueled_solar_energy_for_last_interval, update_currently_charging_bevs, \
-    check_if_charging_end_less_than_next_interval, start_charging_of_new_bev, share_remaining_charging_power_per_bev, \
+    check_if_charging_energy_less_than_next_interval, start_charging_of_new_bev, share_remaining_charging_power_per_bev, \
     set_unused_solar_energy
 from simulationClasses import ParkingState
 from simulationData import safe_charging_list_per_minute, safe_bev_dict_per_minute_forecast
@@ -61,9 +61,8 @@ def start_post_optimization(minute_interval, simulation_day, solar_peak_power, b
                                                         available_solar_power, id_bev)
         safe_charging_list_per_minute(simulation_day, simulation_data, minute)
         # safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, available_solar_power)
-    print("\n")
-    print("BEVs dict before charging start updated: ", simulation_day.bevs_dict.get_bevs_dict())
     set_bevs_dict_charging_start_for_forward_pass(simulation_day)
+    clear_charging_energy(simulation_day)
     print("\n")
     print("OPTIMIZATION DONE")
     print("BEVs dict: ", simulation_day.bevs_dict.get_bevs_dict())
@@ -76,6 +75,12 @@ def set_bevs_dict_charging_start_for_forward_pass(simulation_day):
         if charging_start_from_backward_pass is not None and charging_time is not None:
             new_charging_start = charging_start_from_backward_pass - charging_time
             simulation_day.bevs_dict.set_charging_start(id_bev, new_charging_start)
+
+
+def clear_charging_energy(simulation_day):
+    for id_bev in simulation_day.bevs_dict.get_bevs_dict():
+        if len(simulation_day.bevs_dict.get_charging_data(id_bev)) > 0:
+            simulation_day.bevs_dict.set_charging_energy(id_bev, 0)
 
 
 def update_fueled_solar_energy_optimization(available_solar_power_last_interval, simulation_day, minute_interval,
@@ -141,8 +146,8 @@ def set_charging_end_if_less_than_next_interval_optimization(residual_charging_e
                                                              bev_data):
     residual_charging_time = get_residual_charging_time(residual_charging_energy,
                                                         solar_power_per_bev_for_next_interval)
-    if check_if_charging_end_less_than_next_interval(solar_power_per_bev_for_next_interval, minute_interval,
-                                                     residual_charging_energy, id_bev) and \
+    if check_if_charging_energy_less_than_next_interval(solar_power_per_bev_for_next_interval, minute_interval,
+                                                        residual_charging_energy, id_bev) and \
             check_if_solar_power_per_bev_for_next_interval_is_not_null(solar_power_per_bev_for_next_interval):
         swap_charging_bevs_because_residual_charging_time_over_optimization(residual_charging_time, id_bev,
                                                                             simulation_day, minute,

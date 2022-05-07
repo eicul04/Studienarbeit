@@ -124,7 +124,11 @@ class BevDictionary:
         return None
 
     def get_charging_end(self, id_bev):
-        return self.get_charging_start(id_bev) + self.get_charging_time(id_bev)
+        charging_start = self.get_charging_start(id_bev)
+        charging_time = self.get_charging_time(id_bev)
+        if charging_start is not None and charging_time is not None:
+            return charging_start + charging_time
+        return None
 
     def set_charging_start(self, id_bev, new_charging_start):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
@@ -135,6 +139,16 @@ class BevDictionary:
             bev_charging_data = self.get_charging_data(id_bev)
             bev_charging_data[0] = new_charging_tuple
 
+    def set_charging_energy(self, id_bev, new_charging_energy):
+        latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
+        if latest_charging_tuple is not None:
+            charging_start = latest_charging_tuple[0]
+            charging_time = latest_charging_tuple[1]
+            new_charging_tuple = (charging_start, charging_time, new_charging_energy)
+            bev_charging_data = self.get_charging_data(id_bev)
+            bev_charging_data[0] = new_charging_tuple
+
+
     def get_fueled_charging_energy(self, id_bev):
         latest_charging_tuple = self.get_latest_charging_tuple(id_bev)
         if latest_charging_tuple is not None:
@@ -142,8 +156,7 @@ class BevDictionary:
         return 0
 
     def get_charging_data(self, id_bev):
-        bev_data = self.bevs_dict[id_bev]
-        return bev_data[2]
+        return self.bevs_dict[id_bev][2]
 
     def get_keys(self):
         return self.bevs_dict.keys()
@@ -302,8 +315,6 @@ class SimulationDay:
         for id_bev in self.bevs_dict.get_bevs_dict():
             self.bevs_dict.set_parking_state(id_bev, ParkingState.NON_PARKING)
 
-    def add_arriving_waiting_bevs(self, minute):
-        for id_bev in self.bevs_dict.get_keys():
-            if timeTransformation.in_minutes(self.bevs_dict.get_parking_start(id_bev)) == minute:
-                self.waiting_bevs_list.add_bev(id_bev)
-                self.bevs_dict.set_parking_state(id_bev, ParkingState.WAITING)
+    def add_arriving_waiting_bev(self, id_bev):
+        self.waiting_bevs_list.add_bev(id_bev)
+        self.bevs_dict.set_parking_state(id_bev, ParkingState.WAITING)
