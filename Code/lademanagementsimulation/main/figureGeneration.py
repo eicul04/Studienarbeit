@@ -1,5 +1,7 @@
 from collections import OrderedDict
 from collections import defaultdict
+from operator import getitem
+
 import pandas as pd
 import plotly.express as px
 import numpy as np
@@ -28,7 +30,8 @@ def get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_
 
 
 def create_charging_power_figure(simulation_day, solar_peak_power, bev_data, minute_interval):
-    df_available_solar_power = data.get_available_solar_power_dataframe_linear_interpolated(solar_peak_power, minute_interval)
+    df_available_solar_power = data.get_available_solar_power_dataframe_linear_interpolated(solar_peak_power,
+                                                                                            minute_interval)
     charging_power_per_bev_per_minute_dict = bev_data.charging_power_per_bev_per_minute_dict
     generate_charging_power_figure(df_available_solar_power, charging_power_per_bev_per_minute_dict, minute_interval)
 
@@ -44,8 +47,16 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
                                   y=df_available_solar_energy['Verfügbare Solarleistung'],
                                   line_color='orange', name='Verfügbare Solarleistung')
 
+    for id_bev, charging_power_per_minute in charging_power_per_bev_per_minute_dict.items():
+        charging_power_per_bev_per_minute_dict[id_bev] = OrderedDict(sorted(charging_power_per_minute.items()))
+
+    print(charging_power_per_bev_per_minute_dict)
+
     charging_power_per_bev_per_minute_dict_manipulated_for_visualisation = \
         manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict, minute_interval)
+
+    print(charging_power_per_bev_per_minute_dict_manipulated_for_visualisation)
+
     for id_bev, charging_power_per_minute in charging_power_per_bev_per_minute_dict_manipulated_for_visualisation.items():
         minutes_for_id_bev = []
         charging_power_per_minute_for_id_bev = []
@@ -53,8 +64,10 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
             minutes_for_id_bev.append(minute)
             charging_power_per_minute_for_id_bev.append(charging_power_per_minute[minute])
 
-        df_bev = get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_dict_manipulated_for_visualisation,
-                                                           id_bev)
+        df_bev = get_data_frame_for_charging_power_per_bev(
+            charging_power_per_bev_per_minute_dict_manipulated_for_visualisation,
+            id_bev)
+
         df_bev.loc[minutes_for_id_bev[0]] = [0]
         df_bev_zero_values = pd.DataFrame([[charging_power_per_minute_for_id_bev[0]], [0]], columns=['Ladeleistung'],
                                           index=[minutes_for_id_bev[0], minutes_for_id_bev[-1]])
@@ -62,6 +75,8 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
         df_bev = df_bev.append(df_bev_zero_values)
         df_bev.index = df_bev.index + 0  # shifting index
         df_bev = df_bev.sort_index()
+
+        print(df_bev)
 
         ladestrom_bev_fig.add_scatter(x=df_bev.index,
                                       y=df_bev['Ladeleistung'],
