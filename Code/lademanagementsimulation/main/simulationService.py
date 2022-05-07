@@ -1,7 +1,3 @@
-import copy
-
-from timeTransformation import in_minutes
-
 
 def calculate_unused_solar_energy(available_solar_power, minute_interval):
     return available_solar_power * (minute_interval / 60)
@@ -50,6 +46,7 @@ def calculate_overflow_of_bevs_charging(number_of_virtual_charging_stations, num
 
 def update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute,
                                simulation_data, charging_bevs_last_interval, bevs_with_charging_end_in_last_interval):
+    print("FUEL Charging BEVs last interval: ", charging_bevs_last_interval)
     if len(charging_bevs_last_interval) != 0:
 
         for id_bev in charging_bevs_last_interval:

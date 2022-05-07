@@ -266,6 +266,6 @@ def create_plotly_table_forecast(bev_dict_specific_minute, available_solar_power
                                   )))
               ])
 
-    fig.update_layout(width=1000, height=900, title_text='{} kW verfügbare Solarleistung'.format(available_solar_power))
+    fig.update_layout(width=1000, height=900, title_text='{} kW verfügbare Solarleistung (Intervallstart)'.format(available_solar_power))
 
     return fig
