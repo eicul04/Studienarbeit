@@ -325,10 +325,13 @@ def set_bev_data_after_charging_time_over(residual_charging_time, id_bev, simula
     simulation_day.bevs_dict.set_charging_time(id_bev, final_charging_time)
     residual_solar_energy_till_charging_end = solar_power_per_bev_for_next_interval * (residual_charging_time / 60)
     simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, residual_solar_energy_till_charging_end)
+    exact_solar_power_for_visualisation = get_available_solar_power_linear_interpolated(solar_peak_power, charging_end)
+    number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
+    exact_solar_power_for_visualisation_per_bev = exact_solar_power_for_visualisation / number_of_charging_bevs
     print("SET BEV DATA after charging time over for ID BEV {} for minute {}: ".format(id_bev, charging_end),
-          solar_power_per_bev_for_next_interval)
+          exact_solar_power_for_visualisation_per_bev)
     bev_data.add_charging_power_per_bev_per_minute_dict(id_bev, charging_end,
-                                                        solar_power_per_bev_for_next_interval)
+                                                        exact_solar_power_for_visualisation_per_bev)
 
 
 def get_final_charging_time(charging_start, charging_end):
@@ -343,10 +346,13 @@ def set_bev_data_after_parking_time_over(id_bev, simulation_day, solar_power_per
     charging_start = simulation_day.bevs_dict.get_charging_start(id_bev)
     final_charging_time = get_final_charging_time(charging_start, charging_end)
     simulation_day.bevs_dict.set_charging_time(id_bev, final_charging_time)
+    exact_solar_power_for_visualisation = get_available_solar_power_linear_interpolated(solar_peak_power, charging_end)
+    number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
+    exact_solar_power_for_visualisation_per_bev = exact_solar_power_for_visualisation / number_of_charging_bevs
     print("SET BEV DATA after parking time over for ID BEV {} for minute {}: ".format(id_bev, charging_end),
-          solar_power_per_bev_for_next_interval)
+          exact_solar_power_for_visualisation_per_bev)
     bev_data.add_charging_power_per_bev_per_minute_dict(id_bev, charging_end,
-                                                        solar_power_per_bev_for_next_interval)
+                                                        exact_solar_power_for_visualisation_per_bev)
 
 
 def set_unused_solar_energy(residual_time, solar_peak_power, minute, minute_interval, simulation_data):
