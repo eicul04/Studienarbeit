@@ -1,5 +1,6 @@
 from calculation import get_available_solar_power_linear_interpolated
 from dataChecks import check_availability_solar_power
+from simulationClasses import ParkingState
 from simulationService import update_fueled_solar_energy, calculate_overflow_of_bevs_charging, \
     calculate_number_of_charging_stations, safe_unused_solar_energy, calculate_unused_solar_energy
 
@@ -41,7 +42,8 @@ def add_charging_bevs(number_of_bevs_to_add, minute, simulation_day):
 
 
 def add_charging_bev_from_optimization_plan(id_bev, simulation_day):
-    simulation_day.start_charging(id_bev)
+    simulation_day.charging_bevs_list.add_bev(id_bev)
+    simulation_day.bevs_dict.set_parking_state(id_bev, ParkingState.CHARGING)
 
 
 def get_number_of_unoccupied_charging_stations(number_of_free_charging_stations, number_of_waiting_bevs):

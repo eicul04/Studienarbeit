@@ -27,18 +27,11 @@ def start_post_optimization(minute_interval, simulation_day, solar_peak_power, b
     print("START POST OPTIMIZATION")
     simulation_day.reset_simulation_day()
     if_parking_end_out_of_simulation_set_to_interval_max(simulation_day)
-    print(simulation_day.bevs_dict.get_bevs_dict())
-    print("Waiting BEV list: ", simulation_day.waiting_bevs_list.get_waiting_bevs_list())
     day_in_minute_interval_steps = list(reversed(range(480, 960 + 1, minute_interval)))
-    print(day_in_minute_interval_steps)
     for minute in day_in_minute_interval_steps:
-        #print("\n")
-        #print("Minute: ", minute)
         simulation_day.start_charging_between_intervals()
         simulation_day.stop_charging_between_intervals()
         add_bevs_to_waiting_list_if_parking_end_equals_current_minute(simulation_day, minute)
-        #print("Waiting BEVs (after updating new waiting BEVs): ",
-             # simulation_day.waiting_bevs_list.get_waiting_bevs_list())
         available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power,
                                                                               minute - minute_interval / 2)
         # TODO ob folgende Methode sinn macht??
@@ -61,6 +54,7 @@ def start_post_optimization(minute_interval, simulation_day, solar_peak_power, b
                                                         available_solar_power, id_bev)
         safe_charging_list_per_minute(simulation_day, simulation_data, minute)
         # safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, available_solar_power)
+    remove_charging_data_if_charging_time_zero(simulation_day)
     set_bevs_dict_charging_start_for_forward_pass(simulation_day)
     clear_charging_energy(simulation_day)
     print("\n")
@@ -81,6 +75,14 @@ def clear_charging_energy(simulation_day):
     for id_bev in simulation_day.bevs_dict.get_bevs_dict():
         if len(simulation_day.bevs_dict.get_charging_data(id_bev)) > 0:
             simulation_day.bevs_dict.set_charging_energy(id_bev, 0)
+
+
+def remove_charging_data_if_charging_time_zero(simulation_day):
+    for id_bev in simulation_day.bevs_dict.get_bevs_dict():
+        if len(simulation_day.bevs_dict.get_charging_data(id_bev)) > 0:
+            charging_time = simulation_day.bevs_dict.get_charging_time(id_bev)
+            if charging_time == 0:
+                simulation_day.bevs_dict.remove_charging_data(id_bev)
 
 
 def update_fueled_solar_energy_optimization(available_solar_power_last_interval, simulation_day, minute_interval,

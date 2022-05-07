@@ -12,7 +12,8 @@ def update_waiting_bevs_forecast(minute, simulation_day, simulation_data, availa
             if check_if_arriving_bev_is_from_optimization_plan(id_bev, simulation_day):
                 # don't add to waiting list
                 simulation_day.bevs_dict.set_parking_state(id_bev, ParkingState.WAITING)
-            simulation_day.add_arriving_waiting_bev(id_bev)
+            else:
+                simulation_day.add_arriving_waiting_bev(id_bev)
     update_because_parking_time_over(minute, simulation_day)
     safe_simulation_day_state(minute, simulation_day, simulation_data, available_solar_power)
 
@@ -27,15 +28,22 @@ def check_if_arriving_bev_is_from_optimization_plan(id_bev, simulation_day):
 def update_because_parking_time_over(current_minute, simulation_day):
     update_bevs_in_waiting_bevs_list(current_minute, simulation_day.waiting_bevs_list,
                                      simulation_day)
+    update_bevs_from_optimization_plan_if_parking_end_in_minute(simulation_day, current_minute)
     update_bevs_in_charging_bevs_list_if_parking_end_in_minute(current_minute, simulation_day.charging_bevs_list,
                                                                simulation_day)
 
 
+def update_bevs_from_optimization_plan_if_parking_end_in_minute(simulation_day, current_minute):
+    for id_bev in simulation_day.bevs_dict.get_bevs_dict():
+        parking_end = simulation_day.bevs_dict.get_parking_end_in_minutes(id_bev)
+        if parking_end == current_minute:
+            simulation_day.leave_parking(id_bev)
+
+
 def update_bevs_in_charging_bevs_list_if_parking_end_in_minute(current_minute, charging_bevs_list, simulation_day):
     for id_bev in charging_bevs_list.get_charging_bevs_list():
-        parking_end = calculate_parking_end(simulation_day.bevs_dict.get_parking_start(id_bev),
-                                            simulation_day.bevs_dict.get_parking_time(id_bev))
-        if in_minutes(parking_end) == current_minute:
+        parking_end = simulation_day.bevs_dict.get_parking_end_in_minutes(id_bev)
+        if parking_end == current_minute:
             print("stop parking at interval_minute for ", id_bev)
             simulation_day.stop_parking(id_bev)
     simulation_day.remove_from_list(charging_bevs_list)

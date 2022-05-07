@@ -93,6 +93,9 @@ class BevDictionary:
         bev_charging_data = self.bevs_dict[id_bev][2]
         bev_charging_data.append((current_minute, 0, 0))
 
+    def remove_charging_data(self, id_bev):
+        self.bevs_dict[id_bev][2] = []
+
     def add_charging_data_for_forecast(self, id_bev, charging_start, charging_end):
         bev_charging_data = self.bevs_dict[id_bev][2]
         bev_charging_data.append((charging_start, charging_end, 0))
