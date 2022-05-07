@@ -45,26 +45,23 @@ def calculate_overflow_of_bevs_charging(number_of_virtual_charging_stations, num
 
 
 def update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute,
-                               simulation_data, charging_bevs_last_interval, bevs_with_charging_end_in_last_interval):
-    print("FUEL Charging BEVs last interval: ", charging_bevs_last_interval)
-    if len(charging_bevs_last_interval) != 0:
+                               simulation_data, bevs_charging_start_last_interval_already_fueled):
+    last_interval = minute - minute_interval
+    number_of_charging_bevs_of_last_interval = len(simulation_data.charging_list_per_minute_dict[last_interval])
+    if number_of_charging_bevs_of_last_interval != 0:
+        for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
+            if check_if_already_fueled(id_bev, bevs_charging_start_last_interval_already_fueled) is False:
+                print("FUEL Charging BEV: ", id_bev)
+                charging_power_per_bev = get_charging_power_per_bev(available_solar_power_last_interval,
+                                                                    number_of_charging_bevs_of_last_interval)
+                new_charging_energy = calculate_new_charging_energy(charging_power_per_bev, minute_interval)
+                simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, new_charging_energy)
 
-        for id_bev in charging_bevs_last_interval:
-            charging_time = get_charging_time_of_last_interval(minute, minute_interval, id_bev, simulation_day,
-                                                               bevs_with_charging_end_in_last_interval)
-            add_charging_energy_for_charging_interval(charging_bevs_last_interval, id_bev, simulation_day,
-                                                      available_solar_power_last_interval, charging_time)
 
-
-# TODO wenn es ein charging energy downgrade während dem Intervall gibt, muss das Stufenweise in Diagramm
-# da interpoliert fehlerhafte solar energy Berechnung okay???
-def add_charging_energy_for_charging_interval(charging_bevs_last_interval, id_bev,
-                                              simulation_day, available_solar_power_last_interval, charging_time):
-    number_of_bevs_total_in_interval = len(charging_bevs_last_interval)
-    charging_power_per_bev = get_charging_power_per_bev(available_solar_power_last_interval,
-                                                        number_of_bevs_total_in_interval)
-    new_charging_energy = calculate_new_charging_energy(charging_power_per_bev, charging_time)
-    simulation_day.bevs_dict.add_fueled_charging_energy(id_bev, new_charging_energy)
+def check_if_already_fueled(id_bev, bevs_charging_start_last_interval_already_fueled):
+    if id_bev in bevs_charging_start_last_interval_already_fueled:
+        return True
+    return False
 
 
 def get_charging_time_of_last_interval(minute, minute_interval, id_bev, simulation_day,

@@ -1,10 +1,13 @@
 from collections import OrderedDict
 
 from calculation import get_available_solar_power_linear_interpolated, calculate_available_solar_power_per_bev
-from distributionAlgorithmForecastPolling import get_fair_share_charging_energy, update_new_charging_bevs, \
+from chargingStationOccupancy import get_number_of_charging_bevs, get_number_of_charging_stations, \
+    get_number_of_available_charging_stations, check_if_free_charging_stations, check_if_new_bevs_for_charging, \
+    update_unused_solar_energy, add_charging_bevs, get_number_of_unoccupied_charging_stations
+from distributionAlgorithmForecastPolling import get_fair_share_charging_energy, \
     update_fueled_solar_energy_for_last_interval, update_currently_charging_bevs, \
     check_if_charging_energy_less_than_next_interval, start_charging_of_new_bev, share_remaining_charging_power_per_bev, \
-    set_unused_solar_energy
+    set_unused_solar_energy, update_charging_bevs_for_next_interval, get_number_of_bevs_to_add
 from simulationClasses import ParkingState
 from simulationData import safe_charging_list_per_minute, safe_bev_dict_per_minute_forecast
 from simulationService import update_fueled_solar_energy, get_residual_charging_energy, \
@@ -43,9 +46,10 @@ def start_post_optimization(minute_interval, simulation_day, solar_peak_power, b
                                                     minute_interval,
                                                     minute, simulation_data)
             update_charging_time_optimization(minute, simulation_day)
-        update_new_charging_bevs(solar_peak_power, minute, available_solar_power,
-                                 charging_power_pro_bev, simulation_day, bev_data,
-                                 simulation_data, minute_interval)
+        update_charging_bevs_for_next_interval_optimization(available_solar_power, minute, charging_power_pro_bev,
+                                                            simulation_day,
+                                                            bev_data, simulation_data, minute_interval,
+                                                            solar_peak_power)
         for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
             parking_start = simulation_day.bevs_dict.get_parking_start(id_bev)
             residual_parking_time = parking_start - minute
@@ -60,6 +64,23 @@ def start_post_optimization(minute_interval, simulation_day, solar_peak_power, b
     print("\n")
     print("OPTIMIZATION DONE")
     print("BEVs dict: ", simulation_day.bevs_dict.get_bevs_dict())
+
+
+def update_charging_bevs_for_next_interval_optimization(available_solar_power, minute, charging_power_pro_bev,
+                                                        simulation_day,
+                                                        bev_data, simulation_data, minute_interval, solar_peak_power):
+    number_of_waiting_bevs = simulation_day.waiting_bevs_list.get_number_of_waiting_bevs()
+    number_of_charging_bevs = get_number_of_charging_bevs(simulation_day)
+    number_of_free_charging_stations = get_number_of_available_charging_stations(
+        get_number_of_charging_stations(available_solar_power,
+                                        charging_power_pro_bev), number_of_charging_bevs, 0)
+    if check_if_free_charging_stations(number_of_free_charging_stations) and \
+            check_if_new_bevs_for_charging(simulation_day):
+        number_of_unoccupied_charging_stations = get_number_of_unoccupied_charging_stations(
+            number_of_free_charging_stations, number_of_waiting_bevs)
+        number_of_bevs_to_add = get_number_of_bevs_to_add(number_of_free_charging_stations,
+                                                          number_of_unoccupied_charging_stations)
+        add_charging_bevs(number_of_bevs_to_add, minute, simulation_day)
 
 
 def set_bevs_dict_charging_start_for_forward_pass(simulation_day):
