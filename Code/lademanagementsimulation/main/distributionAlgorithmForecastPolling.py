@@ -29,21 +29,19 @@ def start_simulation(solar_peak_power, charging_power_pro_bev,
         simulation_day.start_charging_between_intervals()
         charging_bevs_last_interval = copy.deepcopy(simulation_day.charging_bevs_list.get_charging_bevs_list())
         bevs_with_charging_end_in_last_interval = copy.deepcopy(simulation_day.bevs_to_remove)
-        print("bevs_with_charging_end_in_last_interval: ", bevs_with_charging_end_in_last_interval)
         simulation_day.stop_charging_between_intervals()
         available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power,
                                                                               minute + minute_interval / 2)
+        print("Waiting BEVs: ", simulation_day.waiting_bevs_list.get_waiting_bevs_list())
+        update_waiting_bevs_forecast(minute, simulation_day, simulation_data, available_solar_power)
         update_charging_bevs_from_post_optimization_plan(minute, simulation_day, minute_interval, available_solar_power,
                                                          solar_peak_power, simulation_data, bev_data)
-        update_waiting_bevs_forecast(minute, simulation_day, simulation_data, available_solar_power)
-        print("Waiting BEVs: ", simulation_day.waiting_bevs_list.get_waiting_bevs_list())
+        print("Waiting BEVs after updating parking end: ", simulation_day.waiting_bevs_list.get_waiting_bevs_list())
         print("Charging BEVs after updating post optimization plan and parking end: ",
               simulation_day.charging_bevs_list.get_charging_bevs_list())
         available_solar_power_last_interval = get_available_solar_power_linear_interpolated(solar_peak_power,
                                                                                             minute - minute_interval / 2)
         if minute != 480:
-            # TODO beachten wann Bevs aus charging between intervals list dazu kamen und dann für Abschnitte
-            #  available solar power bestimmen!
             update_charging_time(minute, simulation_day)
             update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute,
                                        simulation_data, charging_bevs_last_interval, bevs_with_charging_end_in_last_interval)
@@ -90,17 +88,19 @@ def update_charging_bevs_from_post_optimization_plan(minute, simulation_day, min
                 simulation_day.bevs_dict.set_parking_state(id_bev, ParkingState.CHARGING)
                 simulation_day.bevs_to_add_to_charging_list.append(id_bev)
             if check_if_bev_charging_end_in_minute(minute, charging_end):
-                stop_charging(id_bev, simulation_day)
+                if id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
+                    stop_charging(id_bev, simulation_day)
             if check_if_bev_charging_end_in_next_interval(residual_charging_time, minute_interval):
-                number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
-                solar_power_per_bev_for_next_interval = calculate_available_solar_power_per_bev(available_solar_power,
-                                                                                                number_of_charging_bevs)
-                swap_charging_bevs_because_residual_charging_time_over(residual_charging_time, id_bev, simulation_day,
-                                                                       minute,
-                                                                       solar_power_per_bev_for_next_interval,
-                                                                       minute_interval, solar_peak_power,
-                                                                       simulation_data,
-                                                                       bev_data)
+                if id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
+                    number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
+                    solar_power_per_bev_for_next_interval = calculate_available_solar_power_per_bev(available_solar_power,
+                                                                                                    number_of_charging_bevs)
+                    swap_charging_bevs_because_residual_charging_time_over(residual_charging_time, id_bev, simulation_day,
+                                                                           minute,
+                                                                           solar_power_per_bev_for_next_interval,
+                                                                           minute_interval, solar_peak_power,
+                                                                           simulation_data,
+                                                                           bev_data)
 
 
 def check_if_bev_charging_start_in_minute(minute, charging_start):
@@ -155,11 +155,16 @@ def save_charging_power_per_bev_for_current_minute(simulation_day, solar_peak_po
     bev_data.add_charging_power_per_bev_per_minute_dict(id_bev, minute, charging_power_real_per_bev)
 
 
+# TODO ggf. falsch
 def update_fueled_solar_energy_for_last_interval(solar_peak_power, simulation_day, minute_interval, simulation_data):
     minute = 960 + minute_interval
+    simulation_day.start_charging_between_intervals()
+    charging_bevs_last_interval = copy.deepcopy(simulation_day.charging_bevs_list.get_charging_bevs_list())
+    bevs_with_charging_end_in_last_interval = copy.deepcopy(simulation_day.bevs_to_remove)
+    simulation_day.stop_charging_between_intervals()
     available_solar_power_last_interval = get_available_solar_power_linear_interpolated(solar_peak_power, 960)
     update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute,
-                               simulation_data)
+                            simulation_data, charging_bevs_last_interval, bevs_with_charging_end_in_last_interval)
 
 
 def set_fair_charging_energy(simulation_day, simulation_data, minute_interval):

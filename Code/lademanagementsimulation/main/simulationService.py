@@ -53,21 +53,16 @@ def update_fueled_solar_energy(available_solar_power_last_interval, simulation_d
     if len(charging_bevs_last_interval) != 0:
 
         for id_bev in charging_bevs_last_interval:
-            start = int(get_charging_start_of_last_interval(minute, minute_interval, id_bev, simulation_day))
-            end = int(get_charging_end_of_last_interval(minute, minute_interval, id_bev, simulation_day,
-                                                        bevs_with_charging_end_in_last_interval))
             charging_time = get_charging_time_of_last_interval(minute, minute_interval, id_bev, simulation_day,
-                                               bevs_with_charging_end_in_last_interval)
-            add_charging_energy_for_charging_interval(start, end, charging_bevs_last_interval, id_bev, simulation_day,
+                                                               bevs_with_charging_end_in_last_interval)
+            add_charging_energy_for_charging_interval(charging_bevs_last_interval, id_bev, simulation_day,
                                                       available_solar_power_last_interval, charging_time)
 
 
 # TODO wenn es ein charging energy downgrade während dem Intervall gibt, muss das Stufenweise in Diagramm
 # da interpoliert fehlerhafte solar energy Berechnung okay???
-def add_charging_energy_for_charging_interval(start, end, charging_bevs_last_interval, id_bev,
+def add_charging_energy_for_charging_interval(charging_bevs_last_interval, id_bev,
                                               simulation_day, available_solar_power_last_interval, charging_time):
-    print("START: ", start)
-    print("END: ", end)
     number_of_bevs_total_in_interval = len(charging_bevs_last_interval)
     charging_power_per_bev = get_charging_power_per_bev(available_solar_power_last_interval,
                                                         number_of_bevs_total_in_interval)
@@ -78,8 +73,9 @@ def add_charging_energy_for_charging_interval(start, end, charging_bevs_last_int
 def get_charging_time_of_last_interval(minute, minute_interval, id_bev, simulation_day,
                                        bevs_with_charging_end_in_last_interval):
     last_minute = minute - minute_interval
-    charging_start = simulation_day.bevs_dict.get_charging_start(id_bev)
-    charging_end = simulation_day.bevs_dict.get_charging_end(id_bev)
+    charging_start = get_charging_start_of_last_interval(minute, minute_interval, id_bev, simulation_day)
+    charging_end = get_charging_end_of_last_interval(minute, id_bev, simulation_day,
+                                                     bevs_with_charging_end_in_last_interval)
     if check_if_charging_start_between_last_interval_and_now(last_minute, charging_start, minute) and \
             check_if_charging_end_between_last_interval_and_now(id_bev, bevs_with_charging_end_in_last_interval):
         return charging_end - charging_start
@@ -102,7 +98,7 @@ def get_charging_start_of_last_interval(minute, minute_interval, id_bev, simulat
         return last_minute
 
 
-def get_charging_end_of_last_interval(minute, minute_interval, id_bev, simulation_day,
+def get_charging_end_of_last_interval(minute, id_bev, simulation_day,
                                       bevs_with_charging_end_in_last_interval):
     charging_end = simulation_day.bevs_dict.get_charging_end(id_bev)
     print("check_if_charging_end_between_last_interval_and_now: ",

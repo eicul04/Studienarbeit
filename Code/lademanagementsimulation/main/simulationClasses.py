@@ -208,6 +208,7 @@ class WaitingBevsList:
         self.waiting_bevs_list.append(id_bev)
 
     def remove_bev(self, id_bev):
+        print("I WANNA REMOVE: ", id_bev)
         self.waiting_bevs_list.remove(id_bev)
 
     def get_number_of_waiting_bevs(self):
