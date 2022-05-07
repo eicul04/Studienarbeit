@@ -7,7 +7,7 @@ from distributionAlgorithmForecastPolling import get_fair_share_charging_energy,
     set_unused_solar_energy
 from simulationClasses import ParkingState
 from simulationData import safe_charging_list_per_minute, safe_bev_dict_per_minute_forecast
-from simulationService import update_fueled_solar_energy, calculate_charging_time, get_residual_charging_energy, \
+from simulationService import update_fueled_solar_energy, get_residual_charging_energy, \
     get_residual_charging_time, check_if_solar_power_per_bev_for_next_interval_is_not_null, stop_charging, \
     check_if_bev_on_waiting_list, check_if_bev_on_charging_list, get_charging_power_per_bev, \
     calculate_new_charging_energy

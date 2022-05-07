@@ -1,3 +1,4 @@
+import copy
 from collections import OrderedDict
 
 import numpy as np
@@ -18,12 +19,6 @@ from simulationService import update_charging_time, update_fueled_solar_energy, 
     check_if_bev_on_charging_list, check_if_charging_energy_less_than_next_interval
 
 
-# TODO neuer Algorithmus
-# schauen ob charging start gesetzt für aktuelle Zeit
-# und wenn ja in charging Liste hinzufügen
-# Tabelle und Ergebnis Algorithmus anpassen
-
-
 def start_simulation(solar_peak_power, charging_power_pro_bev,
                      simulation_day, bev_data, table_dict, simulation_data, minute_interval):
     day_in_minute_interval_steps = list(np.around(np.arange(480, 960 + 1, minute_interval), 1))
@@ -32,25 +27,29 @@ def start_simulation(solar_peak_power, charging_power_pro_bev,
         print("\n")
         print("Minute: ", minute)
         simulation_day.start_charging_between_intervals()
+        charging_bevs_last_interval = copy.deepcopy(simulation_day.charging_bevs_list.get_charging_bevs_list())
+        bevs_with_charging_end_in_last_interval = copy.deepcopy(simulation_day.bevs_to_remove)
+        print("bevs_with_charging_end_in_last_interval: ", bevs_with_charging_end_in_last_interval)
         simulation_day.stop_charging_between_intervals()
         available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power,
                                                                               minute + minute_interval / 2)
         update_charging_bevs_from_post_optimization_plan(minute, simulation_day, minute_interval, available_solar_power,
                                                          solar_peak_power, simulation_data, bev_data)
-        print("Charging BEVs after updating post optimization plan: ",
-              simulation_day.charging_bevs_list.get_charging_bevs_list())
-        print("Waiting BEVs: ", simulation_day.waiting_bevs_list.get_waiting_bevs_list())
         update_waiting_bevs_forecast(minute, simulation_day, simulation_data, available_solar_power)
-        # Solar-Energie die im letzten, vergangenen Minuten-Intervall getankt wurde,
-        # durch zwei sorgt für stückweise interpolation
+        print("Waiting BEVs: ", simulation_day.waiting_bevs_list.get_waiting_bevs_list())
+        print("Charging BEVs after updating post optimization plan and parking end: ",
+              simulation_day.charging_bevs_list.get_charging_bevs_list())
         available_solar_power_last_interval = get_available_solar_power_linear_interpolated(solar_peak_power,
                                                                                             minute - minute_interval / 2)
         if minute != 480:
             # TODO beachten wann Bevs aus charging between intervals list dazu kamen und dann für Abschnitte
             #  available solar power bestimmen!
-            update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute,
-                                       simulation_data)
             update_charging_time(minute, simulation_day)
+            update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute,
+                                       simulation_data, charging_bevs_last_interval, bevs_with_charging_end_in_last_interval)
+
+        # Solar-Energie die im letzten, vergangenen Minuten-Intervall getankt wurde,
+        # durch zwei sorgt für stückweise interpolation
         update_new_charging_bevs(solar_peak_power, minute, available_solar_power,
                                  charging_power_pro_bev, simulation_day, bev_data,
                                  simulation_data, minute_interval)
@@ -102,7 +101,6 @@ def update_charging_bevs_from_post_optimization_plan(minute, simulation_day, min
                                                                        minute_interval, solar_peak_power,
                                                                        simulation_data,
                                                                        bev_data)
-    simulation_day.remove_from_list(simulation_day.charging_bevs_list)
 
 
 def check_if_bev_charging_start_in_minute(minute, charging_start):
