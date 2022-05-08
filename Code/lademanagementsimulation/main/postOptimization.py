@@ -1,3 +1,4 @@
+import copy
 from collections import OrderedDict
 
 from calculation import get_available_solar_power_linear_interpolated, calculate_available_solar_power_per_bev
@@ -56,11 +57,14 @@ def start_post_optimization(minute_interval, simulation_day, solar_peak_power, b
             update_currently_charging_bevs_optimization(residual_parking_time, simulation_day, solar_peak_power, minute,
                                                         minute_interval, simulation_data, bev_data,
                                                         available_solar_power, id_bev)
-        safe_charging_list_per_minute(simulation_day, simulation_data, minute)
+        charging_list_to_safe = copy.deepcopy(simulation_day.charging_bevs_list.get_charging_bevs_list())
+        safe_charging_list_per_minute(charging_list_to_safe, simulation_data, minute)
         # safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, available_solar_power)
     remove_charging_data_if_charging_time_zero(simulation_day)
     set_bevs_dict_charging_start_for_forward_pass(simulation_day)
     clear_charging_energy(simulation_day)
+    simulation_data.charging_list_per_minute_dict = {}
+    print("charging list per minute dict: ", simulation_data.charging_list_per_minute_dict)
     print("\n")
     print("OPTIMIZATION DONE")
     print("BEVs dict: ", simulation_day.bevs_dict.get_bevs_dict())
