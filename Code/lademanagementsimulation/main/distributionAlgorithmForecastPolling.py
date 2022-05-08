@@ -18,15 +18,22 @@ from simulationService import update_charging_time, update_fueled_solar_energy, 
     get_residual_charging_time, get_residual_charging_energy, stop_charging, stop_parking, check_if_bev_on_waiting_list, \
     check_if_bev_on_charging_list, check_if_charging_energy_less_than_next_interval
 
+bevs_from_post_optimization = []
 bevs_from_post_optimization_already_checked = []
 bevs_from_post_optimization_charging_in_next_interval = []
 
 
 def start_simulation(solar_peak_power, charging_power_pro_bev,
                      simulation_day, bev_data, table_dict, simulation_data, minute_interval):
+    global bevs_from_post_optimization
     global bevs_from_post_optimization_already_checked
     global bevs_from_post_optimization_charging_in_next_interval
     day_in_minute_interval_steps = list(np.around(np.arange(480, 960 + 1, minute_interval), 1))
+
+    for id_bev in simulation_day.bevs_dict.get_bevs_dict():
+        if len(simulation_day.bevs_dict.get_charging_data(id_bev)) > 0:
+            bevs_from_post_optimization.append(id_bev)
+    print("BEVs from post optimization: ", bevs_from_post_optimization)
 
     for minute in day_in_minute_interval_steps:
         bevs_from_post_optimization_already_checked = []
@@ -110,7 +117,7 @@ def update_charging_bevs_from_post_optimization_plan(minute, simulation_day, min
     print("Charging list after handling overload: ",
           simulation_day.charging_bevs_list.get_charging_bevs_list())
     for id_bev in simulation_day.bevs_dict.get_bevs_dict():
-        if len(simulation_day.bevs_dict.get_charging_data(id_bev)) > 0:
+        if id_bev in bevs_from_post_optimization:
             charging_start = simulation_day.bevs_dict.get_charging_start(id_bev)
             charging_end = simulation_day.bevs_dict.get_charging_end(id_bev)
             residual_charging_time = charging_end - minute

@@ -28,9 +28,7 @@ class SimulationData:
         return self.waiting_list_per_minute_dict
 
     def add_charging_list_to_dict(self, minute, charging_list):
-        print("charging list ITERATION 2: ", charging_list)
         self.charging_list_per_minute_dict[minute] = charging_list
-        print("charging list per minute dict for minute: ", self.charging_list_per_minute_dict[minute])
 
     def get_charging_list_per_minute_dict(self):
         return self.charging_list_per_minute_dict
@@ -152,7 +150,6 @@ def safe_available_solar_power_per_bev_per_minute(simulation_data, minute, avail
 
 
 def safe_charging_list_per_minute(charging_list_to_safe, simulation_data, minute):
-    print("Charging List to safe ITERATION 1: ", charging_list_to_safe)
     simulation_data.add_charging_list_to_dict(minute, charging_list_to_safe)
 
 
