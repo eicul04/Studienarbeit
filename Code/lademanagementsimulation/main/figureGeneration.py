@@ -12,6 +12,7 @@ import data
 import plotly.graph_objects as go
 from itertools import chain
 
+from calculation import get_available_solar_power_linear_interpolated
 from timeTransformation import transform_to_minutes
 from simulationService import calculate_charging_end
 
@@ -34,10 +35,10 @@ def create_charging_power_figure(simulation_day, solar_peak_power, bev_data, min
                                                                                             minute_interval)
     charging_power_per_bev_per_minute_dict = bev_data.charging_power_per_bev_per_minute_dict
     print(charging_power_per_bev_per_minute_dict)
-    generate_charging_power_figure(df_available_solar_power, charging_power_per_bev_per_minute_dict, minute_interval)
+    generate_charging_power_figure(df_available_solar_power, charging_power_per_bev_per_minute_dict, solar_peak_power)
 
 
-def generate_charging_power_figure(df_available_solar_energy, charging_power_per_bev_per_minute_dict, minute_interval):
+def generate_charging_power_figure(df_available_solar_energy, charging_power_per_bev_per_minute_dict, solar_peak_power):
     global ladestrom_bev_fig
 
     # Set axes properties
@@ -53,7 +54,7 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
         charging_power_per_bev_per_minute_dict[id_bev] = OrderedDict(sorted(charging_power_per_minute.items()))
 
     charging_power_per_bev_per_minute_dict_manipulated_for_visualisation = \
-        manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict, minute_interval)
+        manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict, solar_peak_power)
 
     print(charging_power_per_bev_per_minute_dict_manipulated_for_visualisation)
 
@@ -88,13 +89,18 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
     ladestrom_bev_fig.show()
 
 
-def manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict, minute_interval):
+def manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict, solar_peak_power):
     previous_sums = defaultdict(int)
 
     for id_bev, charging_power_per_minute in charging_power_per_bev_per_minute_dict.items():
         for minute in charging_power_per_minute.keys():
-            charging_power_per_minute[minute] += previous_sums[minute]
-            previous_sums[minute] = charging_power_per_minute[minute]
+            stacked_charging_power_per_minute = charging_power_per_minute[minute] + previous_sums[minute]
+            available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power, minute)
+            if stacked_charging_power_per_minute > available_solar_power + 5:
+                previous_sums[minute] = charging_power_per_minute[minute]
+            else:
+                charging_power_per_minute[minute] += previous_sums[minute]
+                previous_sums[minute] = charging_power_per_minute[minute]
 
     return charging_power_per_bev_per_minute_dict
 
