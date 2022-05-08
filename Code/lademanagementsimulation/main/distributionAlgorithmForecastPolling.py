@@ -56,7 +56,7 @@ def start_simulation(solar_peak_power, charging_power_pro_bev,
         available_solar_power_last_interval = get_available_solar_power_linear_interpolated(solar_peak_power,
                                                                                             minute - minute_interval / 2)
         if minute != 480:
-            update_charging_time(minute, simulation_day)
+            update_charging_time(minute, simulation_day, bevs_from_post_optimization)
             update_fueled_solar_energy(available_solar_power_last_interval, simulation_day, minute_interval, minute,
                                        simulation_data, bevs_charging_start_last_interval_already_fueled)
 
@@ -97,6 +97,7 @@ def init_simulation(day_in_minute_interval_steps, minute_interval, simulation_da
 def update_charging_bevs_from_post_optimization_plan(minute, simulation_day, minute_interval, available_solar_power,
                                                      solar_peak_power, simulation_data, bev_data,
                                                      charging_power_pro_bev):
+
     number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
     number_of_charging_bevs += update_number_of_charging_bevs_with_charging_start_in_next_interval(simulation_day,
                                                                                                    minute,
@@ -178,11 +179,13 @@ def remove_charging_bevs_with_closest_fair_charging_energy(charging_list_overloa
     number_of_already_removed_bevs = 0
     for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
         if number_of_already_removed_bevs < charging_list_overload:
-            simulation_day.stop_charging(id_bev)
-            set_bev_data_after_charging_time_over(0, id_bev, simulation_day, minute,
-                                                  solar_power_per_bev_for_next_interval, minute_interval, bev_data,
-                                                  solar_peak_power)
-            print("Removed from charging list because of overload: ", id_bev)
+            charging_end = simulation_day.bevs_dict.get_charging_end(id_bev)
+            if check_if_bev_charging_end_in_minute(minute, charging_end) is False:
+                simulation_day.stop_charging(id_bev)
+                set_bev_data_after_charging_time_over(0, id_bev, simulation_day, minute,
+                                                      solar_power_per_bev_for_next_interval, minute_interval, bev_data,
+                                                      solar_peak_power)
+                print("Removed from charging list because of overload: ", id_bev)
             number_of_already_removed_bevs += 1
     simulation_day.remove_from_list(simulation_day.charging_bevs_list)
 

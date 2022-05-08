@@ -126,10 +126,11 @@ def check_if_charging_end_between_last_interval_and_now(id_bev, bevs_with_chargi
     return False
 
 
-def update_charging_time(minute, simulation_day):
+def update_charging_time(minute, simulation_day, bevs_from_post_optimization):
     for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
-        charging_time = get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev)
-        simulation_day.bevs_dict.set_charging_time(id_bev, charging_time)
+        if id_bev not in bevs_from_post_optimization:
+            charging_time = get_charging_time_for_bev_in_charging_list(simulation_day, minute, id_bev)
+            simulation_day.bevs_dict.set_charging_time(id_bev, charging_time)
 
 
 def check_if_solar_power_per_bev_for_next_interval_is_not_null(solar_power_per_bev_for_next_interval):
