@@ -39,7 +39,6 @@ def start_algorithm(simulation_data, simulation_day, maximum_charging_time, sola
     for minute in day_in_minute_interval_steps:
         available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power, minute)
         simulate_day(minute, simulation_day, simulation_data, available_solar_power)
-        # TODO Tabellenerzeugung (fig nach hinten anschieben)
         safe_bev_dict_per_minute_forecast(minute, simulation_day, bev_data, table_dict, available_solar_power)
         update_charging_bevs(minute, simulation_day)
         if minute != 480:
