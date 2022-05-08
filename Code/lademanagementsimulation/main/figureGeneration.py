@@ -4,17 +4,10 @@ from operator import getitem
 
 import pandas as pd
 import plotly.express as px
-import numpy as np
-import scipy as sp
-import scipy.interpolate
-from matplotlib import pyplot as plt
 import data
 import plotly.graph_objects as go
-from itertools import chain
 
 from calculation import get_available_solar_power_linear_interpolated
-from timeTransformation import transform_to_minutes
-from simulationService import calculate_charging_end
 
 ladestrom_bev_fig = go.Figure()
 
@@ -34,7 +27,6 @@ def create_charging_power_figure(simulation_day, solar_peak_power, bev_data, min
     df_available_solar_power = data.get_available_solar_power_dataframe_linear_interpolated(solar_peak_power,
                                                                                             minute_interval)
     charging_power_per_bev_per_minute_dict = bev_data.charging_power_per_bev_per_minute_dict
-    print(charging_power_per_bev_per_minute_dict)
     generate_charging_power_figure(df_available_solar_power, charging_power_per_bev_per_minute_dict, solar_peak_power)
 
 
@@ -55,8 +47,6 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
 
     charging_power_per_bev_per_minute_dict_manipulated_for_visualisation = \
         manipulate_data_frame_to_stack_diagrams(charging_power_per_bev_per_minute_dict, solar_peak_power)
-
-    print(charging_power_per_bev_per_minute_dict_manipulated_for_visualisation)
 
     for id_bev, charging_power_per_minute in charging_power_per_bev_per_minute_dict_manipulated_for_visualisation.items():
         minutes_for_id_bev = []
