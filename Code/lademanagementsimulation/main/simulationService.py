@@ -49,8 +49,6 @@ def update_fueled_solar_energy(available_solar_power_last_interval, simulation_d
     last_interval = minute - minute_interval
     number_of_charging_bevs_of_last_interval = len(simulation_data.charging_list_per_minute_dict[last_interval])
     print("charging_list_per_minute_dict ", simulation_data.charging_list_per_minute_dict)
-    print("LAAASSST minute: ", last_interval)
-    print("NUUUUUUMBER of charging bevs of last interval: ", number_of_charging_bevs_of_last_interval)
     if number_of_charging_bevs_of_last_interval != 0:
         for id_bev in simulation_day.charging_bevs_list.get_charging_bevs_list():
             if check_if_already_fueled(id_bev, bevs_charging_start_last_interval_already_fueled) is False:

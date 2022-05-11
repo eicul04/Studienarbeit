@@ -46,7 +46,8 @@ def update_bevs_in_charging_bevs_list_if_parking_end_in_minute(current_minute, c
         if parking_end == current_minute:
             print("stop parking at interval_minute for ", id_bev)
             simulation_day.stop_parking(id_bev)
-    simulation_day.remove_from_list(charging_bevs_list)
+    if current_minute != 960:
+        simulation_day.remove_from_list(charging_bevs_list)
 
 
 

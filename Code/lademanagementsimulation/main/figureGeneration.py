@@ -41,6 +41,8 @@ def generate_charging_power_figure(df_available_solar_energy, charging_power_per
                                   y=df_available_solar_energy['Verfügbare Solarleistung'],
                                   line_color='orange', name='Verfügbare Solarleistung')
 
+    # print(charging_power_per_bev_per_minute_dict)
+
     # sort because minutes from optimization reversed
     for id_bev, charging_power_per_minute in charging_power_per_bev_per_minute_dict.items():
         charging_power_per_bev_per_minute_dict[id_bev] = OrderedDict(sorted(charging_power_per_minute.items()))
