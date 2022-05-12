@@ -43,6 +43,7 @@ def start_simulation(solar_peak_power, charging_power_pro_bev,
         stopped_charging_last_interval = []
         print("\n")
         print("Minute: ", minute)
+        print("charging list per minute dict: ", simulation_data.charging_list_per_minute_dict)
         bevs_charging_start_last_interval_already_fueled = copy.deepcopy(simulation_day.bevs_to_add_to_charging_list)
         simulation_day.start_charging_between_intervals()
         simulation_day.stop_charging_between_intervals()
@@ -279,7 +280,7 @@ def save_charging_power_per_bev_for_current_minute(simulation_day, solar_peak_po
 def update_fueled_solar_energy_for_last_interval(solar_peak_power, simulation_day, minute_interval, simulation_data,
                                                  bevs_charging_start_last_interval_already_fueled, bev_data):
     print("LAST INTERVAL CHECKKKKK")
-    minute = 960 + minute_interval
+    minute = 960
     available_solar_power_last_interval = get_available_solar_power_linear_interpolated(solar_peak_power, 960)
     print("stopped_charging_last_interval: ", stopped_charging_last_interval)
     for id_bev in stopped_charging_last_interval:
