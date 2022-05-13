@@ -407,8 +407,8 @@ def allocate_freed_solar_energy(bev_data, minute, minute_interval, residual_time
                                 simulation_day, solar_peak_power, solar_power_per_bev_for_next_interval):
     number_of_charging_bevs = simulation_day.charging_bevs_list.get_number_of_charging_bevs()
     number_of_charging_bevs += len(bevs_from_post_optimization_charging_in_next_interval)
-    if len(simulation_day.waiting_bevs_list.get_waiting_bevs_list()) != 0:
-        chosen_bev_to_start_charging = get_bev_to_start_charging(simulation_day, minute, residual_time)
+    chosen_bev_to_start_charging = get_bev_to_start_charging(simulation_day, minute, residual_time)
+    if len(simulation_day.waiting_bevs_list.get_waiting_bevs_list()) != 0 and chosen_bev_to_start_charging is not None:
         print("Ausgewähltes BEV das frei gewordenen Platz belegen darf: ", chosen_bev_to_start_charging)
         simulation_day.prepare_charging_between_intervals(chosen_bev_to_start_charging)
         charging_start = minute + residual_time
@@ -512,6 +512,8 @@ def get_bev_to_start_charging(simulation_day, minute, residual_charging_time):
         residual_parking_time = parking_end - minute
         if residual_parking_time > residual_charging_time:
             return id_bev
+        else:
+            return None
 
 
 def get_fair_share_charging_energy(simulation_day, id_bev, simulation_data, minute_interval):
