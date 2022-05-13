@@ -145,7 +145,8 @@ def safe_waiting_list_per_minute(simulation_day, simulation_data, minute):
 
 def safe_available_solar_power_per_bev_per_minute(simulation_data, minute, available_solar_power):
     number_of_waiting_bevs = len(simulation_data.waiting_list_per_minute_dict[minute])
-    available_solar_power_per_minute = calculate_available_solar_power_per_bev(available_solar_power, number_of_waiting_bevs)
+    available_solar_power_per_minute = calculate_available_solar_power_per_bev(available_solar_power,
+                                                                               number_of_waiting_bevs)
     simulation_data.add_available_solar_power_per_bev_to_dict(minute, available_solar_power_per_minute)
 
 
@@ -166,59 +167,6 @@ def get_charging_status_of_bev(bev_data):
     return 0
 
 
-def create_plotly_table(bev_dict_specific_minute, solar_peak_power, minute):
-    parking_states = []
-    parking_starts = []
-    parking_duration = []
-    number_of_charges = []
-    charging_start = []
-    charging_time = []
-    fueled_solar_energy = []
-
-    for id_bev in bev_dict_specific_minute.keys():
-        bev_data = bev_dict_specific_minute[id_bev]
-        parking_states.append(bev_data[1])
-        parking_starts.append(as_time_of_day_from_hour(bev_data[0][0]))
-        parking_duration.append(bev_data[0][1])
-        fueled_solar_energy_sum = 0
-        number_of_charges_value = 0
-        charging_tuple_start = []
-        charging_tuple_time = []
-        for charging_tuple in bev_data[2]:
-            charging_tuple_start.append(as_time_of_day_from_minute(charging_tuple[0]))
-            charging_tuple_time.append(charging_tuple[1])
-            fueled_solar_energy_sum += charging_tuple[2]
-            number_of_charges_value += 1
-        fueled_solar_energy.append(round(fueled_solar_energy_sum, 2))
-        number_of_charges.append(number_of_charges_value)
-        charging_start.append(charging_tuple_start)
-        charging_time.append(charging_tuple_time)
-
-    available_solar_power = get_available_solar_power_linear_interpolated(solar_peak_power, minute)
-
-    fig = go.Figure(
-        data=[go.Table(header=dict(values=['ID BEV', 'Zustand', 'Parkstart', 'Parkdauer in h', 'Anzahl Aufladungen',
-                                           'Ladestart', 'Ladedauer in min', 'Getankte Solarenergie in kWh']),
-                       cells=dict(values=[[id_bev for id_bev in bev_dict_specific_minute.keys()],
-                                          [item for item in parking_states],
-                                          [item for item in parking_starts],
-                                          [item for item in parking_duration],
-                                          [item for item in number_of_charges],
-                                          [item for item in charging_start],
-                                          [item for item in charging_time],
-                                          [item for item in fueled_solar_energy],
-                                          ],
-                                  fill=dict(color=[[
-                                      'lightgray' if state == 'nicht parkend' else 'lightyellow' if state == 'wartend' else 'palegreen'
-                                      for state in parking_states]]
-                                  )))
-              ])
-
-    fig.update_layout(width=1000, height=900, title_text='{} kW verfügbare Solarleistung'.format(available_solar_power))
-
-    return fig
-
-
 def create_plotly_table_forecast(bev_dict_specific_minute, available_solar_power):
     parking_states = []
     parking_starts = []
@@ -227,13 +175,15 @@ def create_plotly_table_forecast(bev_dict_specific_minute, available_solar_power
     charging_time = []
     fueled_solar_energy = []
     fair_share_charging_energy = []
+    variation_fueled_from_fair = []
 
     for id_bev in bev_dict_specific_minute.keys():
         bev_data = bev_dict_specific_minute[id_bev]
         parking_states.append(bev_data[1])
         parking_starts.append(as_time_of_day_from_hour(bev_data[0][0]))
         parking_duration.append(bev_data[0][1])
-        fair_share_charging_energy.append(round(bev_data[3][0], 2))
+        fair_share_charging_energy_value = bev_data[3][0]
+        fair_share_charging_energy.append(round(fair_share_charging_energy_value, 2))
         fueled_solar_energy_sum = 0
         number_of_charges_value = 0
         charging_tuple_start = []
@@ -246,10 +196,18 @@ def create_plotly_table_forecast(bev_dict_specific_minute, available_solar_power
         fueled_solar_energy.append(round(fueled_solar_energy_sum, 2))
         charging_start.append(charging_tuple_start)
         charging_time.append(charging_tuple_time)
+        variation_fueled_from_fair_value = calculate_variation_fueled_from_fair(fueled_solar_energy_sum,
+                                                                                fair_share_charging_energy_value)
+        variation_fueled_from_fair.append(round(variation_fueled_from_fair_value, 2))
+
+    average_variation = calculate_average_variation(variation_fueled_from_fair)
+    total_number_of_fueled_solar_energy = calculate_total_number_of_fueled_solar_energy(fueled_solar_energy)
 
     fig = go.Figure(
         data=[go.Table(header=dict(values=['ID BEV', 'Zustand', 'Parkstart', 'Parkdauer in h', 'Ladestart',
-                                           'Ladedauer in min', 'Getankte Solarenergie in kWh', 'Fairer Solarenergie Anteil in kWh']),
+                                           'Ladedauer in min', 'Geladene Solarenergie in kWh',
+                                           'Fairer Solarenergie Anteil in kWh',
+                                           'Abweichung Geladene von Fairer Solarenergie in %']),
                        cells=dict(values=[[id_bev for id_bev in bev_dict_specific_minute.keys()],
                                           [item for item in parking_states],
                                           [item for item in parking_starts],
@@ -258,6 +216,7 @@ def create_plotly_table_forecast(bev_dict_specific_minute, available_solar_power
                                           [item for item in charging_time],
                                           [item for item in fueled_solar_energy],
                                           [item for item in fair_share_charging_energy],
+                                          [item for item in variation_fueled_from_fair],
                                           ],
                                   fill=dict(color=[[
                                       'lightgray' if state == 'nicht parkend' else 'lightyellow' if state == 'wartend' else 'palegreen'
@@ -265,6 +224,36 @@ def create_plotly_table_forecast(bev_dict_specific_minute, available_solar_power
                                   )))
               ])
 
-    fig.update_layout(width=1000, height=900, title_text='{} kW verfügbare Solarleistung (Intervallmitte)'.format(available_solar_power))
+    fig.update_layout(width=1000, height=900,
+                      title_text='{} kW verfügbare Solarleistung (Intervallmitte), <br>'
+                                 '{}% durchschnittliche Abweichung geladener von fairer Solarenergie, '
+                                 '<br> {} Aufgeladene Solarenergie insgesamt'.format(
+                          available_solar_power,
+                          round(average_variation, 2), round(total_number_of_fueled_solar_energy, 2)))
 
     return fig
+
+
+def calculate_average_variation(variation_fueled_from_fair):
+    iterator = 0
+    variation_sum = 0
+    while iterator < len(variation_fueled_from_fair):
+        variation_sum += variation_fueled_from_fair[iterator]
+        iterator += 1
+    return variation_sum / len(variation_fueled_from_fair)
+
+
+def calculate_variation_fueled_from_fair(fueled_solar_energy_sum, fair_share_charging_energy_value):
+    if fueled_solar_energy_sum < fair_share_charging_energy_value:
+        return (fair_share_charging_energy_value - fueled_solar_energy_sum) / fair_share_charging_energy_value \
+               * 100
+    return 0
+
+
+def calculate_total_number_of_fueled_solar_energy(fueled_solar_energy):
+    iterator = 0
+    total_number_of_fueled_solar_energy= 0
+    while iterator < len(fueled_solar_energy):
+        total_number_of_fueled_solar_energy += fueled_solar_energy[iterator]
+        iterator += 1
+    return total_number_of_fueled_solar_energy

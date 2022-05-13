@@ -23,6 +23,18 @@ def get_data_frame_for_charging_power_per_bev(charging_power_per_bev_per_minute_
     return pd.DataFrame.from_dict(charging_power_per_minute_dict, orient='index', columns=['Ladeleistung'])
 
 
+def create_probability_arriving_time_figure():
+    df_probability_arrival_times = data.get_probability_arrival_time_bevs()
+    df_probability_arrival_times['Wahrscheinlichkeit Anzahl ankommende BEVs'] = df_probability_arrival_times['Wahrscheinlichkeit Anzahl ankommende BEVs'].transform(lambda x: x * 100)
+    fig = px.bar(df_probability_arrival_times, x='Uhrzeit', y='Wahrscheinlichkeit Anzahl ankommende BEVs')
+    fig.update_layout(yaxis={'title': 'Wahrscheinlichkeit Anzahl ankommende BEVs in %'},
+                                    xaxis={'title': 'Uhrzeit'},
+                                    title={'text': 'Wahrscheinlichkeiten Ankunftszeiten',
+                                           'font': {'size': 24}, 'x': 0.5, 'xanchor': 'center'},
+                                    template='plotly_white')
+    fig.show()
+
+
 def create_charging_power_figure(simulation_day, solar_peak_power, bev_data, minute_interval):
     df_available_solar_power = data.get_available_solar_power_dataframe_linear_interpolated(solar_peak_power,
                                                                                             minute_interval)
@@ -129,4 +141,3 @@ def create_bev_number_figure(bev_data):
                                     template='plotly_white')
 
     bev_number_figure.show()
-
