@@ -147,6 +147,7 @@ def safe_available_solar_power_per_bev_per_minute(simulation_data, minute, avail
     number_of_waiting_bevs = len(simulation_data.waiting_list_per_minute_dict[minute])
     available_solar_power_per_minute = calculate_available_solar_power_per_bev(available_solar_power,
                                                                                number_of_waiting_bevs)
+    print("Number of waiting BEVs: ", number_of_waiting_bevs)
     simulation_data.add_available_solar_power_per_bev_to_dict(minute, available_solar_power_per_minute)
 
 
@@ -227,9 +228,9 @@ def create_plotly_table_forecast(bev_dict_specific_minute, available_solar_power
     fig.update_layout(width=1000, height=900,
                       title_text='{} kW verfügbare Solarleistung (Intervallmitte), <br>'
                                  '{}% durchschnittliche Abweichung geladener von fairer Solarenergie, '
-                                 '<br> {} Aufgeladene Solarenergie insgesamt'.format(
+                                 .format(
                           available_solar_power,
-                          round(average_variation, 2), round(total_number_of_fueled_solar_energy, 2)))
+                          round(average_variation, 2)))
 
     return fig
 
